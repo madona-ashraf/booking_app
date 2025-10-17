@@ -47,8 +47,7 @@ class HomePage extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Image.asset('assets/icons/plane.png', height: 30),
-                      Image.asset('assets/icons/search.png', height: 28),
+
                       GestureDetector(
                         onTap: () {
                           showModalBottomSheet(
