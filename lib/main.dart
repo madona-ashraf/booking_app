@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'features/home/presentation/pages/home_page.dart';
+
 import 'core/constants/app_colors.dart';
+import 'features/home/presentation/pages/home_page.dart';
 
 void main() {
   runApp(const FlightApp());
@@ -12,7 +13,7 @@ class FlightApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flight Booking App',
+      title: 'Flight Booking ',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         primarySwatch: Colors.teal,
