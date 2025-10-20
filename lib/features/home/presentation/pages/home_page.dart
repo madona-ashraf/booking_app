@@ -43,76 +43,14 @@ class HomePage extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  // 🧭 صف الأيقونات
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-
-                      GestureDetector(
-                        onTap: () {
-                          showModalBottomSheet(
-                            context: context,
-                            builder:
-                                (context) => Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    ListTile(
-                                      leading: const Icon(Icons.person),
-                                      title: const Text('Profile'),
-                                      onTap: () {
-                                        Navigator.pop(context);
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (_) => const ProfilePage(),
-                                          ),
-                                        );
-                                      },
-                                    ),
-                                    ListTile(
-                                      leading: const Icon(Icons.login),
-                                      title: const Text('Login'),
-                                      onTap: () {
-                                        Navigator.pop(context);
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (_) => const LoginPage(),
-                                          ),
-                                        );
-                                      },
-                                    ),
-                                    ListTile(
-                                      leading: const Icon(Icons.person_add),
-                                      title: const Text('Register'),
-                                      onTap: () {
-                                        Navigator.pop(context);
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder:
-                                                (_) => const RegisterPage(),
-                                          ),
-                                        );
-                                      },
-                                    ),
-                                  ],
-                                ),
-                          );
-                        },
-                        child: Image.asset(
-                          'assets/icons/profile.png',
-                          height: 30,
-                        ),
-                      ),
-                    ],
-                  ),
+                  // 🔹 (تم حذف صف الأيقونات)
+                  const SizedBox(height: 10),
 
                   const Spacer(),
 
                   // 📝 نص ترحيبي
                   const Text(
-                    "Discover Your Next Flight ✈️",
+                    "Discover Your Next Flight",
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: Colors.white,
@@ -136,7 +74,7 @@ class HomePage extends StatelessWidget {
 
                   const SizedBox(height: 50),
 
-                  // 🚀 زر Get Started
+                  // 🚀 زر Search Flights
                   SizedBox(
                     width: double.infinity,
                     height: 56,
@@ -169,7 +107,7 @@ class HomePage extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  
+
                   // 🔍 زر Browse Destinations
                   SizedBox(
                     width: double.infinity,
