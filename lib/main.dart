@@ -1,10 +1,16 @@
 import 'package:flutter/material.dart';
 import 'features/home/presentation/pages/home_page.dart';
 import 'core/constants/app_colors.dart';
-
-void main() {
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(const FlightApp());
 }
+
 
 class FlightApp extends StatelessWidget {
   const FlightApp({super.key});
