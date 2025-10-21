@@ -1,6 +1,9 @@
+import 'package:bookingapp/core/constants/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'login_page.dart';
 import '../../../home/presentation/pages/home_page.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -16,7 +19,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return Scaffold( appBar: AppBar(backgroundColor: Colors.teal,),
       backgroundColor: Colors.white,
       body: SafeArea(
         child: Padding(
@@ -29,7 +32,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
                 // ===== Title =====
                 const Text(
-                  "Create Account ✈️",
+                  "Create Account",
                   style: TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
@@ -120,16 +123,27 @@ class _RegisterPageState extends State<RegisterPage> {
                   height: 56,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
+                      backgroundColor: Colors.teal,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16),
                       ),
                     ),
-                    onPressed: () {
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(builder: (context) => const HomePage()),
-                      );
+                    onPressed: ()async {
+                      try {
+  final credential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+    email: _emailController.text,
+    password: _passwordController.text,
+  );
+} on FirebaseAuthException catch (e) {
+  if (e.code == 'weak-password') {
+    print('The password provided is too weak.');
+  } else if (e.code == 'email-already-in-use') {
+    print('The account already exists for that email.');
+  }
+} catch (e) {
+  print(e);
+}
+                      
                     },
                     child: const Text(
                       "Sign Up",
@@ -165,7 +179,7 @@ class _RegisterPageState extends State<RegisterPage> {
                         style: TextStyle(
                           fontFamily: 'Poppins',
                           fontWeight: FontWeight.bold,
-                          color: Colors.blue,
+                        
                         ),
                       ),
                     ),

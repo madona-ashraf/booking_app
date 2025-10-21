@@ -83,7 +83,7 @@ class HomePage extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => const FlightSearchPage(),
+                            builder: (_) => const LoginPage(),
                           ),
                         );
                       },
@@ -97,7 +97,7 @@ class HomePage extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(vertical: 14),
                       ),
                       child: const Text(
-                        "Search Flights",
+                        "Login",
                         style: TextStyle(
                           fontFamily: 'Poppins',
                           fontSize: 18,
