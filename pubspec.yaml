@@ -57,8 +57,8 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
 
-  firebase_core: ^2.19.0  # Make sure to use the latest version
-  firebase_auth: ^4.9.0  # Firebase Auth for authentication
+  firebase_core:  # Make sure to use the latest version
+  firebase_auth:  # Firebase Auth for authentication
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
@@ -84,6 +84,10 @@ flutter:
     - assets/images/paris.jpg
     - assets/images/new york.jpg
     - assets/images/istanbul.jpg
+    - assets/images/cairo.jpg
+    - assets/images/rome.jpg
+    - assets/images/london.jpg
+    - assets/images/bali.jpg
     - assets/images/home_bg.jpg
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

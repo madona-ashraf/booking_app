@@ -39,6 +39,38 @@ class DestinationsPage extends StatelessWidget {
         'image': 'assets/images/istanbul.jpg',
         'isHotDeal': false,
       },
+      {
+        'city': 'Cairo',
+        'country': 'Egypt',
+        'price': 350,
+        'rating': 4.4,
+        'image': 'assets/images/cairo.jpg',
+        'isHotDeal': true,
+      },
+      {
+        'city': 'Rome',
+        'country': 'Italy',
+        'price': 600,
+        'rating': 4.7,
+        'image': 'assets/images/rome.jpg',
+        'isHotDeal': false,
+      },
+      {
+        'city': 'London',
+        'country': 'UK',
+        'price': 750,
+        'rating': 4.9,
+        'image': 'assets/images/london.jpg',
+        'isHotDeal': true,
+      },
+      {
+        'city': 'Bali',
+        'country': 'Indonesia',
+        'price': 500,
+        'rating': 4.8,
+        'image': 'assets/images/bali.jpg',
+        'isHotDeal': false,
+      },
     ];
 
     return Scaffold(
@@ -61,7 +93,7 @@ class DestinationsPage extends StatelessWidget {
             crossAxisCount: 2,
             mainAxisSpacing: 16,
             crossAxisSpacing: 16,
-            childAspectRatio: 0.8, // 🔹 الصور أوضح
+            childAspectRatio: 0.8,
           ),
           itemCount: destinations.length,
           itemBuilder: (context, index) {
@@ -96,7 +128,7 @@ class DestinationsPage extends StatelessWidget {
     );
   }
 
-  // 🔸 تصميم كارت الرحلة
+  // تصميم كارت الرحلة
   Widget _flightCard(
     String city,
     String country,
@@ -129,7 +161,7 @@ class DestinationsPage extends StatelessWidget {
                 begin: Alignment.bottomCenter,
                 end: Alignment.topCenter,
                 colors: [
-                  Colors.black.withOpacity(0.25),
+                  Colors.black.withOpacity(0.3),
                   Colors.transparent,
                 ],
               ),
