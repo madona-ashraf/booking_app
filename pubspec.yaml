@@ -53,12 +53,13 @@ dependencies:
   # Animations
   lottie: ^3.1.2
 
+  # Firebase
+  firebase_core: ^3.6.0
+  firebase_auth: ^5.3.1
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
-
-  firebase_core:  # Make sure to use the latest version
-  firebase_auth:  # Firebase Auth for authentication
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
@@ -80,15 +81,7 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   assets:
-    - assets/images/dubai.jpg
-    - assets/images/paris.jpg
-    - assets/images/new york.jpg
-    - assets/images/istanbul.jpg
-    - assets/images/cairo.jpg
-    - assets/images/rome.jpg
-    - assets/images/london.jpg
-    - assets/images/bali.jpg
-    - assets/images/home_bg.jpg
+    - assets/images/
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
 

@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'features/home/presentation/pages/home_page.dart';
 import 'core/constants/app_colors.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'firebase_options.dart';
 void main() async {
 
   runApp(const FlightApp());

@@ -1,12 +1,26 @@
 import 'package:flutter/material.dart';
 import 'flight_detail_page.dart';
 
-class DestinationsPage extends StatelessWidget {
+class DestinationsPage extends StatefulWidget {
   const DestinationsPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final List<Map<String, dynamic>> destinations = [
+  State<DestinationsPage> createState() => _DestinationsPageState();
+}
+
+class _DestinationsPageState extends State<DestinationsPage> {
+  final TextEditingController _searchController = TextEditingController();
+  List<Map<String, dynamic>> _filteredDestinations = [];
+  List<Map<String, dynamic>> _allDestinations = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeDestinations();
+  }
+
+  void _initializeDestinations() {
+    _allDestinations = [
       {
         'city': 'Dubai',
         'country': 'UAE',
@@ -72,7 +86,32 @@ class DestinationsPage extends StatelessWidget {
         'isHotDeal': false,
       },
     ];
+    _filteredDestinations = List.from(_allDestinations);
+  }
 
+  void _filterDestinations(String query) {
+    setState(() {
+      if (query.isEmpty) {
+        _filteredDestinations = List.from(_allDestinations);
+      } else {
+        _filteredDestinations = _allDestinations.where((destination) {
+          final city = destination['city'].toString().toLowerCase();
+          final country = destination['country'].toString().toLowerCase();
+          final searchQuery = query.toLowerCase();
+          return city.contains(searchQuery) || country.contains(searchQuery);
+        }).toList();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
@@ -86,49 +125,138 @@ class DestinationsPage extends StatelessWidget {
         foregroundColor: Colors.white,
         elevation: 2,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: GridView.builder(
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            mainAxisSpacing: 16,
-            crossAxisSpacing: 16,
-            childAspectRatio: 0.8,
-          ),
-          itemCount: destinations.length,
-          itemBuilder: (context, index) {
-            final flight = destinations[index];
-            return GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => FlightDetailPage(
-                      flightName: flight['city'] ?? '',
-                      location: flight['country'] ?? '',
-                      price: flight['price'] ?? 0,
-                      rating: flight['rating'] ?? 0.0,
-                      isHotDeal: flight['isHotDeal'] ?? false,
-                    ),
-                  ),
-                );
-              },
-              child: _flightCard(
-                flight['city'] ?? '',
-                flight['country'] ?? '',
-                flight['image'] ?? 'assets/images/dubai.jpg',
-                flight['price'] ?? 0,
-                flight['rating'] ?? 0.0,
-                flight['isHotDeal'] ?? false,
+      body: Column(
+        children: [
+          // Search Bar
+          Container(
+            padding: const EdgeInsets.all(16.0),
+            child: TextField(
+              controller: _searchController,
+              onChanged: _filterDestinations,
+              decoration: InputDecoration(
+                hintText: 'Search destinations...',
+                prefixIcon: const Icon(Icons.search, color: Colors.teal),
+                suffixIcon: _searchController.text.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(Icons.clear, color: Colors.teal),
+                        onPressed: () {
+                          _searchController.clear();
+                          _filterDestinations('');
+                        },
+                      )
+                    : null,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: Colors.grey[300]!),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: Colors.teal),
+                ),
+                filled: true,
+                fillColor: Colors.grey[50],
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
               ),
-            );
-          },
-        ),
+            ),
+          ),
+          // Results count
+          if (_searchController.text.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  '${_filteredDestinations.length} destination(s) found',
+                  style: TextStyle(
+                    fontFamily: 'Poppins',
+                    color: Colors.grey[600],
+                    fontSize: 14,
+                  ),
+                ),
+              ),
+            ),
+          // Destinations Grid
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: _filteredDestinations.isEmpty
+                  ? Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.search_off,
+                            size: 64,
+                            color: Colors.grey[400],
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            'No destinations found',
+                            style: TextStyle(
+                              fontFamily: 'Poppins',
+                              fontSize: 18,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Try searching with different keywords',
+                            style: TextStyle(
+                              fontFamily: 'Poppins',
+                              fontSize: 14,
+                              color: Colors.grey[500],
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  : GridView.builder(
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        mainAxisSpacing: 16,
+                        crossAxisSpacing: 16,
+                        childAspectRatio: 0.8,
+                      ),
+                      itemCount: _filteredDestinations.length,
+                      itemBuilder: (context, index) {
+                        final flight = _filteredDestinations[index];
+                        return GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => FlightDetailPage(
+                                  flightName: flight['city'] ?? '',
+                                  location: flight['country'] ?? '',
+                                  price: flight['price'] ?? 0,
+                                  rating: flight['rating'] ?? 0.0,
+                                  isHotDeal: flight['isHotDeal'] ?? false,
+                                ),
+                              ),
+                            );
+                          },
+                          child: _flightCard(
+                            flight['city'] ?? '',
+                            flight['country'] ?? '',
+                            flight['image'] ?? 'assets/images/dubai.jpg',
+                            flight['price'] ?? 0,
+                            flight['rating'] ?? 0.0,
+                            flight['isHotDeal'] ?? false,
+                          ),
+                        );
+                      },
+                    ),
+            ),
+          ),
+        ],
       ),
     );
   }
 
-  // تصميم كارت الرحلة
+  // Flight card design
   Widget _flightCard(
     String city,
     String country,

@@ -110,7 +110,7 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                     onPressed: () {
                       if (_formKey.currentState!.validate()) {
-                        // ✅ بعد التأكد من صحة البيانات، ينتقل إلى صفحة البحث عن الرحلات
+                        // After validating data, navigate to flight search page
                         Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-
 import 'flight_results_page.dart';
 
 class FlightSearchPage extends StatefulWidget {
@@ -548,6 +547,18 @@ class _FlightSearchPageState extends State<FlightSearchPage> {
                     ),
                   ],
                 ),
+                const SizedBox(height: 20),
+                ElevatedButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.teal,
+                    foregroundColor: Colors.white,
+                  ),
+                  child: const Text(
+                    'Done',
+                    style: TextStyle(fontFamily: 'Poppins'),
+                  ),
+                ),
               ],
             ),
           ),
@@ -610,13 +621,12 @@ class _FlightSearchPageState extends State<FlightSearchPage> {
       MaterialPageRoute(
         builder:
             (context) => FlightResultsPage(
-              from: _fromController.text,
-              to: _toController.text,
+              departureCity: _fromController.text,
+              arrivalCity: _toController.text,
               departureDate: _departureDate,
-              returnDate: _returnDate,
+              returnDate: _returnDate ?? _departureDate.add(const Duration(days: 1)),
               passengers: _passengers,
               classType: _classType,
-              isRoundTrip: _isRoundTrip,
             ),
       ),
     );

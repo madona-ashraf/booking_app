@@ -1,10 +1,6 @@
 import "package:bookingapp/features/auth/presentation/pages/login_page.dart";
-import 'package:bookingapp/features/auth/presentation/pages/register_page.dart';
 import 'package:flutter/material.dart';
-
 import '../../../booking/presentation/pages/destinations_page.dart';
-import '../../../booking/presentation/pages/flight_search_page.dart';
-import '../../../auth/presentation/pages/profile_page.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -14,12 +10,12 @@ class HomePage extends StatelessWidget {
     return Scaffold(
       body: Stack(
         children: [
-          // 🖼️ خلفية الصفحة
+          // Page background
           Positioned.fill(
             child: Image.asset('assets/images/home_bg.jpg', fit: BoxFit.cover),
           ),
 
-          // ⚫ تدرج خفيف علشان النصوص تبان بوضوح
+          // Light gradient for text clarity
           Positioned.fill(
             child: Container(
               decoration: BoxDecoration(
@@ -36,19 +32,19 @@ class HomePage extends StatelessWidget {
             ),
           ),
 
-          // 📦 المحتوى
+          // Content
           SafeArea(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  // 🔹 (تم حذف صف الأيقونات)
+                  // (Icon row removed)
                   const SizedBox(height: 10),
 
                   const Spacer(),
 
-                  // 📝 نص ترحيبي
+                  // Welcome text
                   const Text(
                     "Discover Your Next Flight",
                     textAlign: TextAlign.center,
@@ -74,7 +70,7 @@ class HomePage extends StatelessWidget {
 
                   const SizedBox(height: 50),
 
-                  // 🚀 زر Search Flights
+                  // Search Flights button
                   SizedBox(
                     width: double.infinity,
                     height: 56,
@@ -108,7 +104,7 @@ class HomePage extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
 
-                  // 🔍 زر Browse Destinations
+                  // Browse Destinations button
                   SizedBox(
                     width: double.infinity,
                     height: 56,
