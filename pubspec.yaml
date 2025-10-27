@@ -37,7 +37,10 @@ dependencies:
   
   # State management
   provider: ^6.1.2
-  
+
+  equatable: ^2.0.0
+
+
   # HTTP requests
   http: ^1.2.2
   
