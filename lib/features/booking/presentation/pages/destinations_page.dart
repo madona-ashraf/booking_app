@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:bookingapp/core/widgets/app_drawer.dart';
 import 'flight_detail_page.dart';
 
 class DestinationsPage extends StatefulWidget {
@@ -113,6 +114,7 @@ class _DestinationsPageState extends State<DestinationsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: const AppDrawer(),
       appBar: AppBar(
         title: const Text(
           "Available Flights",

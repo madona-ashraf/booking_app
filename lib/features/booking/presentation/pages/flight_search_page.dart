@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:bookingapp/core/widgets/app_drawer.dart';
 import 'package:intl/intl.dart';
 import 'flight_results_page.dart';
 
@@ -32,6 +33,7 @@ class _FlightSearchPageState extends State<FlightSearchPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: const AppDrawer(),
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
         title: const Text(

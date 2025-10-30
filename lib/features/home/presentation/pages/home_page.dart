@@ -1,6 +1,9 @@
 import "package:bookingapp/features/auth/presentation/pages/login_page.dart";
 import 'package:flutter/material.dart';
 import '../../../auth/presentation/pages/register_page.dart';
+import 'package:bookingapp/core/widgets/app_drawer.dart';
+ 
+ 
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -8,6 +11,7 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: const AppDrawer(),
       body: Stack(
         children: [
           // Page background
@@ -41,6 +45,37 @@ class HomePage extends StatelessWidget {
                 children: [
                   // (Icon row removed)
                   const SizedBox(height: 10),
+
+                  // Menu button (top-left) to open Drawer
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Builder(
+                      builder: (context) {
+                        return IconButton(
+                          icon: const Icon(Icons.menu, color: Colors.white),
+                          onPressed: () => Scaffold.of(context).openDrawer(),
+                        );
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+
+                  // App wordmark logo (left-aligned, small and simple)
+                  const Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      'SkyBooker',
+                      textAlign: TextAlign.left,
+                      style: TextStyle(
+                        fontFamily: 'Poppins',
+                        color: Colors.white,
+                        fontSize: 22,
+                        fontWeight: FontWeight.w400,
+                        letterSpacing: 0.0,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
 
                   const Spacer(),
 

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:bookingapp/core/widgets/app_drawer.dart';
 import 'flight_search_page.dart';
 
 class FlightDetailPage extends StatelessWidget {
@@ -20,6 +21,7 @@ class FlightDetailPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: const AppDrawer(),
       backgroundColor: Colors.white,
       appBar: AppBar(
         title: Text(
@@ -200,6 +202,7 @@ class FlightBookingPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: const AppDrawer(),
       backgroundColor: Colors.white,
       appBar: AppBar(
         title: const Text(
