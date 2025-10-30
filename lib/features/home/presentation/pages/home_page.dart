@@ -1,6 +1,6 @@
 import "package:bookingapp/features/auth/presentation/pages/login_page.dart";
 import 'package:flutter/material.dart';
-import '../../../booking/presentation/pages/destinations_page.dart';
+import '../../../auth/presentation/pages/register_page.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -104,7 +104,7 @@ class HomePage extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
 
-                  // Browse Destinations button
+                  // Create Account button
                   SizedBox(
                     width: double.infinity,
                     height: 56,
@@ -113,7 +113,7 @@ class HomePage extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => const DestinationsPage(),
+                            builder: (_) => const RegisterPage(),
                           ),
                         );
                       },
@@ -126,7 +126,7 @@ class HomePage extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(vertical: 14),
                       ),
                       child: const Text(
-                        "Browse Destinations",
+                        "Create Account",
                         style: TextStyle(
                           fontFamily: 'Poppins',
                           fontSize: 18,
