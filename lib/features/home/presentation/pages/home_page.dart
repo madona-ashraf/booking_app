@@ -1,10 +1,6 @@
 import "package:bookingapp/features/auth/presentation/pages/login_page.dart";
-import 'package:bookingapp/features/auth/presentation/pages/register_page.dart';
 import 'package:flutter/material.dart';
-
 import '../../../booking/presentation/pages/destinations_page.dart';
-import '../../../booking/presentation/pages/flight_search_page.dart';
-import '../../../auth/presentation/pages/profile_page.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -14,12 +10,12 @@ class HomePage extends StatelessWidget {
     return Scaffold(
       body: Stack(
         children: [
-          // 🖼️ خلفية الصفحة
+          // Page background
           Positioned.fill(
             child: Image.asset('assets/images/home_bg.jpg', fit: BoxFit.cover),
           ),
 
-          // ⚫ تدرج خفيف علشان النصوص تبان بوضوح
+          // Light gradient for text clarity
           Positioned.fill(
             child: Container(
               decoration: BoxDecoration(
@@ -36,84 +32,21 @@ class HomePage extends StatelessWidget {
             ),
           ),
 
-          // 📦 المحتوى
+          // Content
           SafeArea(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  // 🧭 صف الأيقونات
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Image.asset('assets/icons/plane.png', height: 30),
-                      Image.asset('assets/icons/search.png', height: 28),
-                      GestureDetector(
-                        onTap: () {
-                          showModalBottomSheet(
-                            context: context,
-                            builder:
-                                (context) => Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    ListTile(
-                                      leading: const Icon(Icons.person),
-                                      title: const Text('Profile'),
-                                      onTap: () {
-                                        Navigator.pop(context);
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (_) => const ProfilePage(),
-                                          ),
-                                        );
-                                      },
-                                    ),
-                                    ListTile(
-                                      leading: const Icon(Icons.login),
-                                      title: const Text('Login'),
-                                      onTap: () {
-                                        Navigator.pop(context);
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (_) => const LoginPage(),
-                                          ),
-                                        );
-                                      },
-                                    ),
-                                    ListTile(
-                                      leading: const Icon(Icons.person_add),
-                                      title: const Text('Register'),
-                                      onTap: () {
-                                        Navigator.pop(context);
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder:
-                                                (_) => const RegisterPage(),
-                                          ),
-                                        );
-                                      },
-                                    ),
-                                  ],
-                                ),
-                          );
-                        },
-                        child: Image.asset(
-                          'assets/icons/profile.png',
-                          height: 30,
-                        ),
-                      ),
-                    ],
-                  ),
+                  // (Icon row removed)
+                  const SizedBox(height: 10),
 
                   const Spacer(),
 
-                  // 📝 نص ترحيبي
+                  // Welcome text
                   const Text(
-                    "Discover Your Next Flight ✈️",
+                    "Discover Your Next Flight",
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: Colors.white,
@@ -137,7 +70,7 @@ class HomePage extends StatelessWidget {
 
                   const SizedBox(height: 50),
 
-                  // 🚀 زر Get Started
+                  // Search Flights button
                   SizedBox(
                     width: double.infinity,
                     height: 56,
@@ -146,7 +79,7 @@ class HomePage extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => const FlightSearchPage(),
+                            builder: (_) => const LoginPage(),
                           ),
                         );
                       },
@@ -160,7 +93,7 @@ class HomePage extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(vertical: 14),
                       ),
                       child: const Text(
-                        "Search Flights",
+                        "Login",
                         style: TextStyle(
                           fontFamily: 'Poppins',
                           fontSize: 18,
@@ -170,8 +103,8 @@ class HomePage extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  
-                  // 🔍 زر Browse Destinations
+
+                  // Browse Destinations button
                   SizedBox(
                     width: double.infinity,
                     height: 56,

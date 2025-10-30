@@ -10,7 +10,7 @@ class MyApp extends StatelessWidget {
       title: 'Flight Booking App',
       debugShowCheckedModeBanner: false,
 
-      // 💙 الثيم العام للتطبيق
+      // App theme
       theme: ThemeData(
         primarySwatch: Colors.blue,
         scaffoldBackgroundColor: Colors.white,
@@ -44,7 +44,7 @@ class MyApp extends StatelessWidget {
         ),
       ),
 
-      // الصفحة الأولى عند تشغيل التطبيق
+      // Initial page when app starts
       home: const LoginPage(),
     );
   }
