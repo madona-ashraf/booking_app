@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+
 import 'flight_detail_page.dart';
+import 'flight_search_page.dart';
 
 class DestinationsPage extends StatefulWidget {
   const DestinationsPage({super.key});
@@ -94,12 +96,14 @@ class _DestinationsPageState extends State<DestinationsPage> {
       if (query.isEmpty) {
         _filteredDestinations = List.from(_allDestinations);
       } else {
-        _filteredDestinations = _allDestinations.where((destination) {
-          final city = destination['city'].toString().toLowerCase();
-          final country = destination['country'].toString().toLowerCase();
-          final searchQuery = query.toLowerCase();
-          return city.contains(searchQuery) || country.contains(searchQuery);
-        }).toList();
+        _filteredDestinations =
+            _allDestinations.where((destination) {
+              final city = destination['city'].toString().toLowerCase();
+              final country = destination['country'].toString().toLowerCase();
+              final searchQuery = query.toLowerCase();
+              return city.contains(searchQuery) ||
+                  country.contains(searchQuery);
+            }).toList();
       }
     });
   }
@@ -114,12 +118,22 @@ class _DestinationsPageState extends State<DestinationsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        actions: [
+          IconButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const FlightSearchPage(),
+                ),
+              );
+            },
+            icon: Icon(Icons.book_outlined, color: Colors.white, size: 30),
+          ),
+        ],
         title: const Text(
           "Available Flights",
-          style: TextStyle(
-            fontFamily: 'Poppins',
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.bold),
         ),
         backgroundColor: Colors.teal,
         foregroundColor: Colors.white,
@@ -136,15 +150,16 @@ class _DestinationsPageState extends State<DestinationsPage> {
               decoration: InputDecoration(
                 hintText: 'Search destinations...',
                 prefixIcon: const Icon(Icons.search, color: Colors.teal),
-                suffixIcon: _searchController.text.isNotEmpty
-                    ? IconButton(
-                        icon: const Icon(Icons.clear, color: Colors.teal),
-                        onPressed: () {
-                          _searchController.clear();
-                          _filterDestinations('');
-                        },
-                      )
-                    : null,
+                suffixIcon:
+                    _searchController.text.isNotEmpty
+                        ? IconButton(
+                          icon: const Icon(Icons.clear, color: Colors.teal),
+                          onPressed: () {
+                            _searchController.clear();
+                            _filterDestinations('');
+                          },
+                        )
+                        : null,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide(color: Colors.grey[300]!),
@@ -182,73 +197,76 @@ class _DestinationsPageState extends State<DestinationsPage> {
           Expanded(
             child: Padding(
               padding: const EdgeInsets.all(16.0),
-              child: _filteredDestinations.isEmpty
-                  ? Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.search_off,
-                            size: 64,
-                            color: Colors.grey[400],
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            'No destinations found',
-                            style: TextStyle(
-                              fontFamily: 'Poppins',
-                              fontSize: 18,
-                              color: Colors.grey[600],
+              child:
+                  _filteredDestinations.isEmpty
+                      ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.search_off,
+                              size: 64,
+                              color: Colors.grey[400],
                             ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Try searching with different keywords',
-                            style: TextStyle(
-                              fontFamily: 'Poppins',
-                              fontSize: 14,
-                              color: Colors.grey[500],
-                            ),
-                          ),
-                        ],
-                      ),
-                    )
-                  : GridView.builder(
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        mainAxisSpacing: 16,
-                        crossAxisSpacing: 16,
-                        childAspectRatio: 0.8,
-                      ),
-                      itemCount: _filteredDestinations.length,
-                      itemBuilder: (context, index) {
-                        final flight = _filteredDestinations[index];
-                        return GestureDetector(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => FlightDetailPage(
-                                  flightName: flight['city'] ?? '',
-                                  location: flight['country'] ?? '',
-                                  price: flight['price'] ?? 0,
-                                  rating: flight['rating'] ?? 0.0,
-                                  isHotDeal: flight['isHotDeal'] ?? false,
-                                ),
+                            const SizedBox(height: 16),
+                            Text(
+                              'No destinations found',
+                              style: TextStyle(
+                                fontFamily: 'Poppins',
+                                fontSize: 18,
+                                color: Colors.grey[600],
                               ),
-                            );
-                          },
-                          child: _flightCard(
-                            flight['city'] ?? '',
-                            flight['country'] ?? '',
-                            flight['image'] ?? 'assets/images/dubai.jpg',
-                            flight['price'] ?? 0,
-                            flight['rating'] ?? 0.0,
-                            flight['isHotDeal'] ?? false,
-                          ),
-                        );
-                      },
-                    ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Try searching with different keywords',
+                              style: TextStyle(
+                                fontFamily: 'Poppins',
+                                fontSize: 14,
+                                color: Colors.grey[500],
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                      : GridView.builder(
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 2,
+                              mainAxisSpacing: 16,
+                              crossAxisSpacing: 16,
+                              childAspectRatio: 0.8,
+                            ),
+                        itemCount: _filteredDestinations.length,
+                        itemBuilder: (context, index) {
+                          final flight = _filteredDestinations[index];
+                          return GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder:
+                                      (context) => FlightDetailPage(
+                                        flightName: flight['city'] ?? '',
+                                        location: flight['country'] ?? '',
+                                        price: flight['price'] ?? 0,
+                                        rating: flight['rating'] ?? 0.0,
+                                        isHotDeal: flight['isHotDeal'] ?? false,
+                                      ),
+                                ),
+                              );
+                            },
+                            child: _flightCard(
+                              flight['city'] ?? '',
+                              flight['country'] ?? '',
+                              flight['image'] ?? 'assets/images/dubai.jpg',
+                              flight['price'] ?? 0,
+                              flight['rating'] ?? 0.0,
+                              flight['isHotDeal'] ?? false,
+                            ),
+                          );
+                        },
+                      ),
             ),
           ),
         ],
@@ -268,10 +286,7 @@ class _DestinationsPageState extends State<DestinationsPage> {
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
-        image: DecorationImage(
-          image: AssetImage(image),
-          fit: BoxFit.cover,
-        ),
+        image: DecorationImage(image: AssetImage(image), fit: BoxFit.cover),
         boxShadow: [
           BoxShadow(
             color: Colors.grey.withOpacity(0.2),
@@ -288,10 +303,7 @@ class _DestinationsPageState extends State<DestinationsPage> {
               gradient: LinearGradient(
                 begin: Alignment.bottomCenter,
                 end: Alignment.topCenter,
-                colors: [
-                  Colors.black.withOpacity(0.3),
-                  Colors.transparent,
-                ],
+                colors: [Colors.black.withOpacity(0.3), Colors.transparent],
               ),
             ),
           ),
@@ -304,8 +316,10 @@ class _DestinationsPageState extends State<DestinationsPage> {
               children: [
                 if (isHotDeal)
                   Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.redAccent,
                       borderRadius: BorderRadius.circular(8),

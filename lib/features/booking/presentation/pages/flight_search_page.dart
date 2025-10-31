@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
+
+import '../../../auth/presentation/cubit/auth_cubit.dart';
 import 'flight_results_page.dart';
 
 class FlightSearchPage extends StatefulWidget {
@@ -34,6 +37,15 @@ class _FlightSearchPageState extends State<FlightSearchPage> {
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
+        actions: [
+          IconButton(
+            onPressed: () {
+              context.read<AuthCubit>().logout();
+              Navigator.of(context).popUntil((route) => route.isFirst);
+            },
+            icon: Icon(Icons.logout),
+          ),
+        ],
         title: const Text(
           'Search Flights',
           style: TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.bold),
@@ -624,7 +636,8 @@ class _FlightSearchPageState extends State<FlightSearchPage> {
               departureCity: _fromController.text,
               arrivalCity: _toController.text,
               departureDate: _departureDate,
-              returnDate: _returnDate ?? _departureDate.add(const Duration(days: 1)),
+              returnDate:
+                  _returnDate ?? _departureDate.add(const Duration(days: 1)),
               passengers: _passengers,
               classType: _classType,
             ),
