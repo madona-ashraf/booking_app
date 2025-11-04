@@ -1,5 +1,5 @@
+import 'package:bookingapp/features/home/presentation/pages/home_page.dart';
 import 'package:flutter/material.dart';
-import 'features/home/presentation/pages/home_page.dart';
 import 'core/constants/app_colors.dart';
 void main() async {
 
@@ -61,7 +61,7 @@ class FlightApp extends StatelessWidget {
           ),
         ),
       ),
-      home: const HomePage(),
+  home: HomePage(),
     );
   }
 }

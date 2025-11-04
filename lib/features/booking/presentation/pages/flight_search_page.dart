@@ -1,23 +1,63 @@
 import 'package:flutter/material.dart';
-import 'package:bookingapp/core/widgets/app_drawer.dart';
 import 'package:intl/intl.dart';
 import 'flight_results_page.dart';
+import 'package:bookingapp/core/services/ninjas_api_service.dart';
 
 class FlightSearchPage extends StatefulWidget {
-  const FlightSearchPage({super.key});
+  final String? selectedCity;
+  final String? selectedCountry;
+
+  const FlightSearchPage({
+    super.key,
+    this.selectedCity,
+    this.selectedCountry,
+  });
 
   @override
   State<FlightSearchPage> createState() => _FlightSearchPageState();
 }
 
 class _FlightSearchPageState extends State<FlightSearchPage> {
-  final TextEditingController _fromController = TextEditingController();
   final TextEditingController _toController = TextEditingController();
   DateTime _departureDate = DateTime.now().add(const Duration(days: 1));
   DateTime? _returnDate;
   double _passengers = 1;
   String _classType = 'Economy';
   bool _isRoundTrip = false;
+
+  // List of destinations for "from" dropdown
+  final List<String> _fromDestinations = [
+    'Cairo',
+    'Dubai',
+    'Paris',
+    'New York',
+    'London',
+    'Istanbul',
+    'Rome',
+    'Bali',
+    'Tokyo',
+    'Sydney',
+    'Los Angeles',
+    'Singapore',
+    'Bangkok',
+    'Amsterdam',
+    'Berlin',
+  ];
+
+  String? _selectedFrom;
+
+  @override
+  void initState() {
+    super.initState();
+    // Pre-populate "to" field with selected country from destinations page
+    if (widget.selectedCountry != null) {
+      _toController.text = widget.selectedCountry!;
+    }
+    // Set default "from" to first destination if list is not empty
+    if (_fromDestinations.isNotEmpty) {
+      _selectedFrom = _fromDestinations[0]; // Default to first destination
+    }
+  }
 
   final List<String> _popularCities = [
     'New York',
@@ -33,7 +73,6 @@ class _FlightSearchPageState extends State<FlightSearchPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      drawer: const AppDrawer(),
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
         title: const Text(
@@ -151,35 +190,11 @@ class _FlightSearchPageState extends State<FlightSearchPage> {
           Row(
             children: [
               Expanded(
-                child: _buildLocationField(
-                  controller: _fromController,
-                  label: 'From',
-                  icon: Icons.flight_takeoff,
-                ),
-              ),
-              const SizedBox(width: 16),
-              GestureDetector(
-                onTap: _swapLocations,
-                child: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.teal.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Icon(
-                    Icons.swap_vert,
-                    color: Colors.teal,
-                    size: 20,
-                  ),
-                ),
+                child: _buildFromField(),
               ),
               const SizedBox(width: 16),
               Expanded(
-                child: _buildLocationField(
-                  controller: _toController,
-                  label: 'To',
-                  icon: Icons.flight_land,
-                ),
+                child: _buildToField(),
               ),
             ],
           ),
@@ -222,17 +237,66 @@ class _FlightSearchPageState extends State<FlightSearchPage> {
     );
   }
 
-  Widget _buildLocationField({
-    required TextEditingController controller,
-    required String label,
-    required IconData icon,
-  }) {
+  Widget _buildFromField() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: const TextStyle(
+        const Text(
+          'From',
+          style: TextStyle(
+            fontFamily: 'Poppins',
+            fontWeight: FontWeight.w600,
+            color: Colors.grey,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Container(
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.grey[300]!),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: DropdownButtonFormField<String>(
+            value: _selectedFrom,
+            decoration: InputDecoration(
+              hintText: 'Select departure city',
+              prefixIcon: const Icon(Icons.flight_takeoff, color: Colors.teal),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: Colors.teal),
+              ),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+            ),
+            items: _fromDestinations.map((destination) {
+              return DropdownMenuItem<String>(
+                value: destination,
+                child: Text(
+                  destination,
+                  style: const TextStyle(fontFamily: 'Poppins'),
+                ),
+              );
+            }).toList(),
+            onChanged: (value) {
+              setState(() {
+                _selectedFrom = value;
+              });
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildToField() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'To',
+          style: TextStyle(
             fontFamily: 'Poppins',
             fontWeight: FontWeight.w600,
             color: Colors.grey,
@@ -240,10 +304,11 @@ class _FlightSearchPageState extends State<FlightSearchPage> {
         ),
         const SizedBox(height: 8),
         TextField(
-          controller: controller,
+          controller: _toController,
+          readOnly: false, // Make it read-only since it's pre-populated from destination selection
           decoration: InputDecoration(
-            hintText: 'Enter city or airport',
-            prefixIcon: Icon(icon, color: Colors.teal),
+            hintText: 'Destination country',
+            prefixIcon: const Icon(Icons.flight_land, color: Colors.teal),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(color: Colors.grey[300]!),
@@ -252,6 +317,8 @@ class _FlightSearchPageState extends State<FlightSearchPage> {
               borderRadius: BorderRadius.circular(12),
               borderSide: const BorderSide(color: Colors.teal),
             ),
+            filled: false,
+            fillColor: Colors.grey[100], // Indicate it's read-only
           ),
         ),
       ],
@@ -466,11 +533,6 @@ class _FlightSearchPageState extends State<FlightSearchPage> {
     );
   }
 
-  void _swapLocations() {
-    final temp = _fromController.text;
-    _fromController.text = _toController.text;
-    _toController.text = temp;
-  }
 
   Future<void> _selectDate(BuildContext context, bool isDeparture) async {
     final DateTime? picked = await showDatePicker(
@@ -607,30 +669,81 @@ class _FlightSearchPageState extends State<FlightSearchPage> {
     );
   }
 
-  void _searchFlights() {
-    if (_fromController.text.isEmpty || _toController.text.isEmpty) {
+  void _searchFlights() async {
+    if (_selectedFrom == null || _selectedFrom!.isEmpty || _toController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Please enter departure and destination cities'),
+          content: Text('Please select departure city and destination'),
           backgroundColor: Colors.red,
         ),
       );
       return;
     }
 
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder:
-            (context) => FlightResultsPage(
-              departureCity: _fromController.text,
+    // Show loading indicator
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(
+        child: CircularProgressIndicator(),
+      ),
+    );
+
+    try {
+      // Search flights using Ninjas API
+      final flights = await NinjasApiService.searchFlights(
+        from: _selectedFrom!,
+        to: _toController.text,
+        departureDate: _departureDate,
+      );
+
+      // Close loading dialog
+      if (mounted) Navigator.pop(context);
+
+      // Navigate to results page
+      if (mounted) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => FlightResultsPage(
+              departureCity: _selectedFrom!,
+              arrivalCity: _toController.text,
+              departureDate: _departureDate,
+              returnDate: _returnDate ?? _departureDate.add(const Duration(days: 1)),
+              passengers: _passengers,
+              classType: _classType,
+              apiFlights: flights, // Pass API results
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      // Close loading dialog
+      if (mounted) Navigator.pop(context);
+      
+      // Show error and navigate with empty results (will show mock data as fallback)
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error searching flights: $e. Showing available options.'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => FlightResultsPage(
+              departureCity: _selectedFrom!,
               arrivalCity: _toController.text,
               departureDate: _departureDate,
               returnDate: _returnDate ?? _departureDate.add(const Duration(days: 1)),
               passengers: _passengers,
               classType: _classType,
             ),
-      ),
-    );
+          ),
+        );
+      }
+    }
   }
 }

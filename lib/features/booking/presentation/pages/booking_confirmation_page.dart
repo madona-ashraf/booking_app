@@ -1,5 +1,8 @@
+import 'package:bookingapp/core/widgets/app_bottom_navigation.dart';
+import 'package:bookingapp/core/widgets/main_shell.dart';
+import 'package:bookingapp/features/auth/presentation/pages/profile_page.dart';
+import 'package:bookingapp/features/booking/presentation/pages/destinations_page.dart';
 import 'package:flutter/material.dart';
-import 'package:bookingapp/core/widgets/app_drawer.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../core/models/flight.dart';
@@ -78,7 +81,6 @@ class _BookingConfirmationPageState extends State<BookingConfirmationPage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      drawer: const AppDrawer(),
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
         title: const Text(
@@ -100,6 +102,27 @@ class _BookingConfirmationPageState extends State<BookingConfirmationPage>
                   _isConfirmed ? _buildConfirmationView() : _buildPaymentView(),
             ),
           );
+        },
+      ),
+      bottomNavigationBar: AppBottomNavigation(
+        currentIndex: 1, // Destinations tab (booking confirmation is booking-related)
+        onTap: (index) {
+          if (index == 0) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => const MainShell()),
+            );
+          } else if (index == 1) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => const DestinationsPage()),
+            );
+          } else if (index == 2) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => const ProfilePage()),
+            );
+          }
         },
       ),
     );

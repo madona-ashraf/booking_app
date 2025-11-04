@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'login_page.dart';
 import '../../../home/presentation/pages/home_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:bookingapp/core/widgets/app_drawer.dart';
 
 
 class RegisterPage extends StatefulWidget {
@@ -20,7 +19,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold( drawer: const AppDrawer(), appBar: AppBar(backgroundColor: Colors.teal,),
+  return Scaffold(appBar: AppBar(backgroundColor: Colors.teal,),
       backgroundColor: Colors.white,
       body: SafeArea(
         child: Padding(
@@ -130,11 +129,11 @@ class _RegisterPageState extends State<RegisterPage> {
                       ),
                     ),
                     onPressed: ()async {
-                      try {
-  final credential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
-    email: _emailController.text,
-    password: _passwordController.text,
-  );
+                                          try {
+                                            await FirebaseAuth.instance.createUserWithEmailAndPassword(
+                                              email: _emailController.text,
+                                              password: _passwordController.text,
+                                            );
 } on FirebaseAuthException catch (e) {
   if (e.code == 'weak-password') {
     print('The password provided is too weak.');

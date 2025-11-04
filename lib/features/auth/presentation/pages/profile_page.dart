@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/models/booking.dart';
 import '../../../../core/models/flight.dart';
-import 'package:bookingapp/core/widgets/app_drawer.dart';
+import '../../../../core/widgets/app_bottom_navigation.dart';
+import '../../../home/presentation/pages/home_page.dart';
+import '../../../booking/presentation/pages/destinations_page.dart';
+
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -61,7 +64,6 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      drawer: const AppDrawer(),
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
         title: const Text(

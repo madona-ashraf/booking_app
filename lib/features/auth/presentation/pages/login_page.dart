@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'register_page.dart';
-import '../../../booking/presentation/pages/flight_search_page.dart';
-import 'package:bookingapp/core/widgets/app_drawer.dart';
+import 'package:bookingapp/core/widgets/main_shell.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -18,7 +17,6 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      drawer: const AppDrawer(),
       backgroundColor: Colors.white,
       appBar: AppBar(
         title: const Text(
@@ -112,11 +110,11 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                     onPressed: () {
                       if (_formKey.currentState!.validate()) {
-                        // After validating data, navigate to flight search page
+                        // After validating data, navigate to main shell starting at News Page
                         Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => const FlightSearchPage(),
+                            builder: (context) => const MainShell(initialIndex: 2),
                           ),
                         );
                       }

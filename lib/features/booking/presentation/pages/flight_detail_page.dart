@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:bookingapp/core/widgets/app_drawer.dart';
 import 'flight_search_page.dart';
+import '../../../../core/widgets/app_bottom_navigation.dart';
+import '../../../home/presentation/pages/home_page.dart';
+import 'destinations_page.dart';
+import '../../../auth/presentation/pages/profile_page.dart';
 
 class FlightDetailPage extends StatelessWidget {
   final String flightName;
@@ -21,7 +24,6 @@ class FlightDetailPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      drawer: const AppDrawer(),
       backgroundColor: Colors.white,
       appBar: AppBar(
         title: Text(
@@ -182,6 +184,27 @@ class FlightDetailPage extends StatelessWidget {
           ],
         ),
       ),
+      bottomNavigationBar: AppBottomNavigation(
+        currentIndex: 1, // Destinations tab (flight detail is booking-related)
+        onTap: (index) {
+          if (index == 0) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => HomePage()),
+            );
+          } else if (index == 1) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => const DestinationsPage()),
+            );
+          } else if (index == 2) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => const ProfilePage()),
+            );
+          }
+        },
+      ),
     );
   }
 }
@@ -202,7 +225,6 @@ class FlightBookingPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      drawer: const AppDrawer(),
       backgroundColor: Colors.white,
       appBar: AppBar(
         title: const Text(
@@ -305,6 +327,27 @@ class FlightBookingPage extends StatelessWidget {
             ),
           ],
         ),
+      ),
+      bottomNavigationBar: AppBottomNavigation(
+        currentIndex: 1, // Destinations tab (flight booking is booking-related)
+        onTap: (index) {
+          if (index == 0) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => HomePage()),
+            );
+          } else if (index == 1) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => const DestinationsPage()),
+            );
+          } else if (index == 2) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => const ProfilePage()),
+            );
+          }
+        },
       ),
     );
   }

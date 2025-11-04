@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:bookingapp/core/widgets/app_drawer.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../core/models/flight.dart';
 import 'booking_confirmation_page.dart';
+import '../../../../core/widgets/app_bottom_navigation.dart';
+import '../../../home/presentation/pages/home_page.dart';
+import 'destinations_page.dart';
+import '../../../auth/presentation/pages/profile_page.dart';
 
 class FlightBookingPage extends StatefulWidget {
   final Flight flight;
@@ -36,7 +39,6 @@ class _FlightBookingPageState extends State<FlightBookingPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      drawer: const AppDrawer(),
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
         title: const Text(
@@ -64,6 +66,27 @@ class _FlightBookingPageState extends State<FlightBookingPage> {
             _buildBookButton(),
           ],
         ),
+      ),
+      bottomNavigationBar: AppBottomNavigation(
+        currentIndex: 1, // Destinations tab (flight booking is booking-related)
+        onTap: (index) {
+          if (index == 0) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => HomePage()),
+            );
+          } else if (index == 1) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => const DestinationsPage()),
+            );
+          } else if (index == 2) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => const ProfilePage()),
+            );
+          }
+        },
       ),
     );
   }

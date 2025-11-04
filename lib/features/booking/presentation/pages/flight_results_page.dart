@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:bookingapp/core/widgets/app_drawer.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/models/flight.dart';
 import 'flight_booking_page.dart';
+import '../../../../core/widgets/app_bottom_navigation.dart';
+import '../../../home/presentation/pages/home_page.dart';
+import 'destinations_page.dart';
+import '../../../auth/presentation/pages/profile_page.dart';
 
 class FlightResultsPage extends StatefulWidget {
   final String departureCity;
@@ -11,6 +14,7 @@ class FlightResultsPage extends StatefulWidget {
   final DateTime returnDate;
   final double passengers;
   final String classType;
+  final List<Map<String, dynamic>>? apiFlights;
 
   const FlightResultsPage({
     super.key,
@@ -20,6 +24,7 @@ class FlightResultsPage extends StatefulWidget {
     required this.returnDate,
     required this.passengers,
     required this.classType,
+    this.apiFlights,
   });
 
   @override
@@ -42,15 +47,95 @@ class _FlightResultsPageState extends State<FlightResultsPage> {
   }
 
   void _loadFlights() {
-    // Simulate API call delay
-    Future.delayed(const Duration(seconds: 1), () {
+    // If API flights are provided, use them; otherwise use mock data
+    if (widget.apiFlights != null && widget.apiFlights!.isNotEmpty) {
       setState(() {
-        _flights = _generateMockFlights();
+        _flights = _convertApiFlightsToFlightList(widget.apiFlights!);
         _filteredFlights = List.from(_flights);
         _isLoading = false;
         _sortFlights();
       });
-    });
+    } else {
+      // Simulate API call delay for mock data
+      Future.delayed(const Duration(seconds: 1), () {
+        setState(() {
+          _flights = _generateMockFlights();
+          _filteredFlights = List.from(_flights);
+          _isLoading = false;
+          _sortFlights();
+        });
+      });
+    }
+  }
+
+  List<Flight> _convertApiFlightsToFlightList(List<Map<String, dynamic>> apiFlights) {
+    final baseDate = widget.departureDate;
+    final flights = <Flight>[];
+    
+    for (int i = 0; i < apiFlights.length; i++) {
+      final apiFlight = apiFlights[i];
+      try {
+        // Map API response to Flight model
+        // Adjust field names based on actual API response structure
+        final departureTime = apiFlight['departure_time'] != null
+            ? DateTime.parse(apiFlight['departure_time'])
+            : baseDate.add(Duration(hours: 8 + i * 2));
+        
+        final arrivalTime = apiFlight['arrival_time'] != null
+            ? DateTime.parse(apiFlight['arrival_time'])
+            : departureTime.add(const Duration(hours: 4, minutes: 30));
+        
+        flights.add(Flight(
+          id: apiFlight['flight_number']?.toString() ?? (i + 1).toString(),
+          airline: apiFlight['airline'] ?? 'Airline',
+          flightNumber: apiFlight['flight_number']?.toString() ?? 'FL${i + 1}',
+          departureCity: widget.departureCity,
+          departureAirport: apiFlight['departure_airport'] ?? 
+                           apiFlight['from'] ?? 
+                           _getAirportCode(widget.departureCity),
+          arrivalCity: widget.arrivalCity,
+          arrivalAirport: apiFlight['arrival_airport'] ?? 
+                         apiFlight['to'] ?? 
+                         _getAirportCode(widget.arrivalCity),
+          departureTime: departureTime,
+          arrivalTime: arrivalTime,
+          price: (apiFlight['price'] ?? apiFlight['fare'] ?? 300.0 + i * 50).toDouble(),
+          availableSeats: apiFlight['available_seats'] ?? 10 + i,
+          aircraft: apiFlight['aircraft'] ?? 'Airbus A320',
+          rating: (apiFlight['rating'] ?? 4.5 + (i % 3) * 0.1).toDouble(),
+          amenities: apiFlight['amenities'] != null 
+              ? List<String>.from(apiFlight['amenities'])
+              : ['WiFi', 'Meal', 'Entertainment'],
+          isHotDeal: apiFlight['is_hot_deal'] ?? (i % 3 == 0),
+          imageUrl: 'assets/images/dubai.jpg',
+        ));
+      } catch (e) {
+        print('Error converting API flight: $e');
+      }
+    }
+    
+    return flights;
+  }
+
+  String _getAirportCode(String cityName) {
+    final cityMap = {
+      'Cairo': 'CAI',
+      'Dubai': 'DXB',
+      'Paris': 'CDG',
+      'New York': 'JFK',
+      'London': 'LHR',
+      'Istanbul': 'IST',
+      'Rome': 'FCO',
+      'Bali': 'DPS',
+      'Tokyo': 'NRT',
+      'Sydney': 'SYD',
+      'Los Angeles': 'LAX',
+      'Singapore': 'SIN',
+      'Bangkok': 'BKK',
+      'Amsterdam': 'AMS',
+      'Berlin': 'BER',
+    };
+    return cityMap[cityName] ?? cityName.substring(0, 3).toUpperCase();
   }
 
   List<Flight> _generateMockFlights() {
@@ -191,7 +276,6 @@ class _FlightResultsPageState extends State<FlightResultsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      drawer: const AppDrawer(),
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
         title: Column(
@@ -396,6 +480,27 @@ class _FlightResultsPageState extends State<FlightResultsPage> {
                       ),
           ),
         ],
+      ),
+      bottomNavigationBar: AppBottomNavigation(
+        currentIndex: 1, // Destinations tab (flight results is booking-related)
+        onTap: (index) {
+          if (index == 0) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => HomePage()),
+            );
+          } else if (index == 1) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => const DestinationsPage()),
+            );
+          } else if (index == 2) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => const ProfilePage()),
+            );
+          }
+        },
       ),
     );
   }
