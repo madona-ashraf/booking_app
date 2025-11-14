@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+
 import 'flight_results_page.dart';
 
 class FlightSearchPage extends StatefulWidget {
@@ -624,7 +625,8 @@ class _FlightSearchPageState extends State<FlightSearchPage> {
               departureCity: _fromController.text,
               arrivalCity: _toController.text,
               departureDate: _departureDate,
-              returnDate: _returnDate ?? _departureDate.add(const Duration(days: 1)),
+              returnDate:
+                  _returnDate ?? _departureDate.add(const Duration(days: 1)),
               passengers: _passengers,
               classType: _classType,
             ),

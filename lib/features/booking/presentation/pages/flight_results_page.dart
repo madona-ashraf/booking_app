@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+
+import '../../../../core/constants/airport_codes.dart';
 import '../../../../core/models/flight.dart';
+import '../../bookingengine/fligthrepo/amadeus_service.dart';
 import 'flight_booking_page.dart';
 
 class FlightResultsPage extends StatefulWidget {
@@ -29,10 +32,11 @@ class _FlightResultsPageState extends State<FlightResultsPage> {
   List<Flight> _flights = [];
   List<Flight> _filteredFlights = [];
   bool _isLoading = true;
-  String _sortBy = 'price'; // price, duration, departure
-  String _filterBy = 'all'; // all, direct, stops
-  double _maxPrice = 1000.0;
-  bool _showFilters = false;
+  String? _errorMessage;
+  String _sortBy = 'price';
+  final double _maxPrice = 1000.0;
+  final bool _showFilters = false;
+  final AmadeusService _amadeusService = AmadeusService();
 
   @override
   void initState() {
@@ -40,112 +44,61 @@ class _FlightResultsPageState extends State<FlightResultsPage> {
     _loadFlights();
   }
 
-  void _loadFlights() {
-    // Simulate API call delay
-    Future.delayed(const Duration(seconds: 1), () {
+  Future<void> _loadFlights() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      // Convert city names to airport codes
+      final originCode = AirportCodes.getAirportCodeOrInput(
+        widget.departureCity,
+      );
+      final destinationCode = AirportCodes.getAirportCodeOrInput(
+        widget.arrivalCity,
+      );
+
+      // Convert class type to Amadeus format
+      String travelClass = 'ECONOMY';
+      if (widget.classType.toLowerCase().contains('business')) {
+        travelClass = 'BUSINESS';
+      } else if (widget.classType.toLowerCase().contains('first')) {
+        travelClass = 'FIRST';
+      }
+
+      // Search flights using Amadeus API
+      final flights = await _amadeusService.searchFlights(
+        originLocationCode: originCode,
+        destinationLocationCode: destinationCode,
+        departureDate: widget.departureDate,
+        returnDate: widget.returnDate,
+        adults: widget.passengers.toInt(),
+        travelClass: travelClass,
+        max: 25,
+      );
+
       setState(() {
-        _flights = _generateMockFlights();
+        _flights = flights;
         _filteredFlights = List.from(_flights);
         _isLoading = false;
         _sortFlights();
-      });
-    });
-  }
 
-  List<Flight> _generateMockFlights() {
-    final baseDate = widget.departureDate;
-    return [
-      Flight(
-        id: '1',
-        airline: 'Emirates',
-        flightNumber: 'EK123',
-        departureCity: widget.departureCity,
-        departureAirport: 'CAI',
-        arrivalCity: widget.arrivalCity,
-        arrivalAirport: 'DXB',
-        departureTime: baseDate.add(const Duration(hours: 8)),
-        arrivalTime: baseDate.add(const Duration(hours: 12, minutes: 30)),
-        price: 450.0,
-        availableSeats: 15,
-        aircraft: 'Boeing 777',
-        rating: 4.8,
-        amenities: ['WiFi', 'Meal', 'Entertainment', 'Lounge Access'],
-        isHotDeal: true,
-        imageUrl: 'assets/images/dubai.jpg',
-      ),
-      Flight(
-        id: '2',
-        airline: 'Turkish Airlines',
-        flightNumber: 'TK456',
-        departureCity: widget.departureCity,
-        departureAirport: 'CAI',
-        arrivalCity: widget.arrivalCity,
-        arrivalAirport: 'IST',
-        departureTime: baseDate.add(const Duration(hours: 10)),
-        arrivalTime: baseDate.add(const Duration(hours: 16, minutes: 45)),
-        price: 380.0,
-        availableSeats: 8,
-        aircraft: 'Airbus A330',
-        rating: 4.6,
-        amenities: ['WiFi', 'Meal', 'Entertainment'],
-        isHotDeal: false,
-        imageUrl: 'assets/images/istanbul.jpg',
-      ),
-      Flight(
-        id: '3',
-        airline: 'Qatar Airways',
-        flightNumber: 'QR789',
-        departureCity: widget.departureCity,
-        departureAirport: 'CAI',
-        arrivalCity: widget.arrivalCity,
-        arrivalAirport: 'DOH',
-        departureTime: baseDate.add(const Duration(hours: 14)),
-        arrivalTime: baseDate.add(const Duration(hours: 20, minutes: 15)),
-        price: 520.0,
-        availableSeats: 12,
-        aircraft: 'Boeing 787',
-        rating: 4.9,
-        amenities: ['WiFi', 'Meal', 'Entertainment', 'Lounge Access', 'Priority Boarding'],
-        isHotDeal: true,
-        imageUrl: 'assets/images/dubai.jpg',
-      ),
-      Flight(
-        id: '4',
-        airline: 'EgyptAir',
-        flightNumber: 'MS321',
-        departureCity: widget.departureCity,
-        departureAirport: 'CAI',
-        arrivalCity: widget.arrivalCity,
-        arrivalAirport: 'DXB',
-        departureTime: baseDate.add(const Duration(hours: 6)),
-        arrivalTime: baseDate.add(const Duration(hours: 10, minutes: 30)),
-        price: 320.0,
-        availableSeats: 25,
-        aircraft: 'Airbus A320',
-        rating: 4.3,
-        amenities: ['Meal', 'Entertainment'],
-        isHotDeal: false,
-        imageUrl: 'assets/images/dubai.jpg',
-      ),
-      Flight(
-        id: '5',
-        airline: 'Etihad Airways',
-        flightNumber: 'EY654',
-        departureCity: widget.departureCity,
-        departureAirport: 'CAI',
-        arrivalCity: widget.arrivalCity,
-        arrivalAirport: 'AUH',
-        departureTime: baseDate.add(const Duration(hours: 18)),
-        arrivalTime: baseDate.add(const Duration(hours: 23, minutes: 45)),
-        price: 480.0,
-        availableSeats: 6,
-        aircraft: 'Boeing 777',
-        rating: 4.7,
-        amenities: ['WiFi', 'Meal', 'Entertainment', 'Lounge Access'],
-        isHotDeal: false,
-        imageUrl: 'assets/images/dubai.jpg',
-      ),
-    ];
+        if (_flights.isEmpty) {
+          _errorMessage = 'No flights found for your search criteria.';
+        }
+      });
+    } catch (e) {
+      setState(() {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString()),
+            backgroundColor: Colors.teal,
+            duration: Duration(seconds: 2),
+          ),
+        );
+      });
+    }
   }
 
   void _sortFlights() {
@@ -158,32 +111,14 @@ class _FlightResultsPageState extends State<FlightResultsPage> {
           _filteredFlights.sort((a, b) => a.duration.compareTo(b.duration));
           break;
         case 'departure':
-          _filteredFlights.sort((a, b) => a.departureTime.compareTo(b.departureTime));
+          _filteredFlights.sort(
+            (a, b) => a.departureTime.compareTo(b.departureTime),
+          );
           break;
         case 'rating':
           _filteredFlights.sort((a, b) => b.rating.compareTo(a.rating));
           break;
       }
-    });
-  }
-
-  void _filterFlights() {
-    setState(() {
-      _filteredFlights = _flights.where((flight) {
-        bool priceFilter = flight.price <= _maxPrice;
-        bool typeFilter = true;
-        
-        if (_filterBy == 'direct') {
-          // Assuming direct flights have shorter duration (less than 6 hours)
-          typeFilter = flight.duration.inHours < 6;
-        } else if (_filterBy == 'stops') {
-          // Assuming flights with stops have longer duration (more than 6 hours)
-          typeFilter = flight.duration.inHours >= 6;
-        }
-        
-        return priceFilter && typeFilter;
-      }).toList();
-      _sortFlights();
     });
   }
 
@@ -216,16 +151,6 @@ class _FlightResultsPageState extends State<FlightResultsPage> {
         backgroundColor: Colors.teal,
         foregroundColor: Colors.white,
         elevation: 0,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.filter_list),
-            onPressed: () {
-              setState(() {
-                _showFilters = !_showFilters;
-              });
-            },
-          ),
-        ],
       ),
       body: Column(
         children: [
@@ -265,8 +190,14 @@ class _FlightResultsPageState extends State<FlightResultsPage> {
                   underline: Container(),
                   items: const [
                     DropdownMenuItem(value: 'price', child: Text('Price')),
-                    DropdownMenuItem(value: 'duration', child: Text('Duration')),
-                    DropdownMenuItem(value: 'departure', child: Text('Departure')),
+                    DropdownMenuItem(
+                      value: 'duration',
+                      child: Text('Duration'),
+                    ),
+                    DropdownMenuItem(
+                      value: 'departure',
+                      child: Text('Departure'),
+                    ),
                     DropdownMenuItem(value: 'rating', child: Text('Rating')),
                   ],
                   onChanged: (value) {
@@ -279,7 +210,7 @@ class _FlightResultsPageState extends State<FlightResultsPage> {
               ],
             ),
           ),
-          
+
           // Filters Panel
           if (_showFilters)
             Container(
@@ -289,37 +220,6 @@ class _FlightResultsPageState extends State<FlightResultsPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Filters',
-                    style: TextStyle(
-                      fontFamily: 'Poppins',
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  
-                  // Flight Type Filter
-                  const Text(
-                    'Flight Type',
-                    style: TextStyle(
-                      fontFamily: 'Poppins',
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      _buildFilterChip('all', 'All Flights'),
-                      const SizedBox(width: 8),
-                      _buildFilterChip('direct', 'Direct'),
-                      const SizedBox(width: 8),
-                      _buildFilterChip('stops', 'With Stops'),
-                    ],
-                  ),
-                  
-                  const SizedBox(height: 16),
-                  
                   // Price Range Filter
                   Text(
                     'Max Price: \$${_maxPrice.toInt()}',
@@ -328,99 +228,131 @@ class _FlightResultsPageState extends State<FlightResultsPage> {
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  Slider(
-                    value: _maxPrice,
-                    min: 100,
-                    max: 1000,
-                    divisions: 18,
-                    onChanged: (value) {
-                      setState(() {
-                        _maxPrice = value;
-                        _filterFlights();
-                      });
-                    },
-                    activeColor: Colors.teal,
-                  ),
                 ],
               ),
             ),
-          
+
           // Flights List
           Expanded(
-            child: _isLoading
-                ? const Center(
-                    child: CircularProgressIndicator(
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.teal),
-                    ),
-                  )
-                : _filteredFlights.isEmpty
+            child:
+                _isLoading
+                    ? const Center(
+                      child: CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.teal),
+                      ),
+                    )
+                    : _errorMessage != null && _filteredFlights.isEmpty
                     ? Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(20.0),
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Icon(
-                              Icons.flight_takeoff,
+                              Icons.error_outline,
                               size: 64,
                               color: Colors.grey[400],
                             ),
                             const SizedBox(height: 16),
                             Text(
-                              'No flights found',
+                              _errorMessage!,
                               style: TextStyle(
                                 fontFamily: 'Poppins',
-                                fontSize: 18,
+                                fontSize: 16,
                                 color: Colors.grey[600],
                               ),
+                              textAlign: TextAlign.center,
                             ),
-                            const SizedBox(height: 8),
-                            Text(
-                              'Try adjusting your filters',
-                              style: TextStyle(
-                                fontFamily: 'Poppins',
-                                fontSize: 14,
-                                color: Colors.grey[500],
+                            const SizedBox(height: 24),
+                            ElevatedButton.icon(
+                              onPressed: _loadFlights,
+                              icon: const Icon(Icons.refresh),
+                              label: const Text('Retry'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.teal,
+                                foregroundColor: Colors.white,
                               ),
                             ),
                           ],
                         ),
-                      )
-                    : ListView.builder(
-                        padding: const EdgeInsets.all(16),
-                        itemCount: _filteredFlights.length,
-                        itemBuilder: (context, index) {
-                          final flight = _filteredFlights[index];
-                          return _buildFlightCard(flight);
-                        },
                       ),
+                    )
+                    : _filteredFlights.isEmpty
+                    ? Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.flight_takeoff,
+                            size: 64,
+                            color: Colors.grey[400],
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            'No flights found',
+                            style: TextStyle(
+                              fontFamily: 'Poppins',
+                              fontSize: 18,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Try adjusting your filters',
+                            style: TextStyle(
+                              fontFamily: 'Poppins',
+                              fontSize: 14,
+                              color: Colors.grey[500],
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                    : ListView.builder(
+                      padding: const EdgeInsets.all(16),
+                      itemCount: _filteredFlights.length,
+                      itemBuilder: (context, index) {
+                        final flight = _filteredFlights[index];
+                        return _buildFlightCard(flight);
+                      },
+                    ),
           ),
-        ],
-      ),
-    );
-  }
 
-  Widget _buildFilterChip(String value, String label) {
-    final isSelected = _filterBy == value;
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          _filterBy = value;
-          _filterFlights();
-        });
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        decoration: BoxDecoration(
-          color: isSelected ? Colors.teal : Colors.grey[200],
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            fontFamily: 'Poppins',
-            color: isSelected ? Colors.white : Colors.black87,
-            fontSize: 12,
-          ),
-        ),
+          // Error message banner (if API failed but mock data is shown)
+          if (_errorMessage != null && _filteredFlights.isNotEmpty)
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
+              color: Colors.orange[100],
+              child: Row(
+                children: [
+                  Icon(Icons.info_outline, color: Colors.orange[800]),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Showing sample data. ${_errorMessage}',
+                      style: TextStyle(
+                        fontFamily: 'Poppins',
+                        fontSize: 12,
+                        color: Colors.orange[900],
+                      ),
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: _loadFlights,
+                    child: Text(
+                      'Retry',
+                      style: TextStyle(
+                        fontFamily: 'Poppins',
+                        color: Colors.orange[900],
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+        ],
       ),
     );
   }
@@ -454,14 +386,10 @@ class _FlightResultsPageState extends State<FlightResultsPage> {
                     color: Colors.teal.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: const Icon(
-                    Icons.flight,
-                    color: Colors.teal,
-                    size: 20,
-                  ),
+                  child: const Icon(Icons.flight, color: Colors.teal, size: 20),
                 ),
                 const SizedBox(width: 12),
-                
+
                 // Airline Info
                 Expanded(
                   child: Column(
@@ -486,10 +414,13 @@ class _FlightResultsPageState extends State<FlightResultsPage> {
                     ],
                   ),
                 ),
-                
+
                 // Rating
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.amber.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(12),
@@ -497,11 +428,7 @@ class _FlightResultsPageState extends State<FlightResultsPage> {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(
-                        Icons.star,
-                        color: Colors.amber,
-                        size: 14,
-                      ),
+                      const Icon(Icons.star, color: Colors.amber, size: 14),
                       const SizedBox(width: 4),
                       Text(
                         flight.rating.toString(),
@@ -517,7 +444,7 @@ class _FlightResultsPageState extends State<FlightResultsPage> {
               ],
             ),
           ),
-          
+
           // Flight Details
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -555,7 +482,7 @@ class _FlightResultsPageState extends State<FlightResultsPage> {
                     ],
                   ),
                 ),
-                
+
                 // Flight Path
                 Expanded(
                   child: Column(
@@ -603,7 +530,7 @@ class _FlightResultsPageState extends State<FlightResultsPage> {
                     ],
                   ),
                 ),
-                
+
                 // Arrival
                 Expanded(
                   child: Column(
@@ -639,9 +566,9 @@ class _FlightResultsPageState extends State<FlightResultsPage> {
               ],
             ),
           ),
-          
+
           const SizedBox(height: 16),
-          
+
           // Amenities
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -651,23 +578,27 @@ class _FlightResultsPageState extends State<FlightResultsPage> {
                   child: Wrap(
                     spacing: 8,
                     runSpacing: 4,
-                    children: flight.amenities.take(3).map((amenity) {
-                      return Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: Colors.teal.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Text(
-                          amenity,
-                          style: const TextStyle(
-                            fontFamily: 'Poppins',
-                            fontSize: 10,
-                            color: Colors.teal,
-                          ),
-                        ),
-                      );
-                    }).toList(),
+                    children:
+                        flight.amenities.take(3).map((amenity) {
+                          return Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.teal.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              amenity,
+                              style: const TextStyle(
+                                fontFamily: 'Poppins',
+                                fontSize: 10,
+                                color: Colors.teal,
+                              ),
+                            ),
+                          );
+                        }).toList(),
                   ),
                 ),
                 if (flight.amenities.length > 3)
@@ -682,9 +613,9 @@ class _FlightResultsPageState extends State<FlightResultsPage> {
               ],
             ),
           ),
-          
+
           const SizedBox(height: 16),
-          
+
           // Price and Book Button
           Container(
             padding: const EdgeInsets.all(16),
@@ -722,38 +653,21 @@ class _FlightResultsPageState extends State<FlightResultsPage> {
                     ],
                   ),
                 ),
-                
+
                 // Hot Deal Badge
-                if (flight.isHotDeal)
-                  Container(
-                    margin: const EdgeInsets.only(right: 12),
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.redAccent,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Text(
-                      'HOT DEAL',
-                      style: TextStyle(
-                        fontFamily: 'Poppins',
-                        color: Colors.white,
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                
+
                 // Book Button
                 ElevatedButton(
                   onPressed: () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => FlightBookingPage(
-                          flight: flight,
-                          passengers: widget.passengers,
-                          classType: widget.classType,
-                        ),
+                        builder:
+                            (context) => FlightBookingPage(
+                              flight: flight,
+                              passengers: widget.passengers,
+                              classType: widget.classType,
+                            ),
                       ),
                     );
                   },
@@ -763,7 +677,10 @@ class _FlightResultsPageState extends State<FlightResultsPage> {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 12,
+                    ),
                   ),
                   child: const Text(
                     'Select',

@@ -1,10 +1,14 @@
-import "package:bookingapp/features/auth/presentation/pages/login_page.dart";
+import 'package:bookingapp/features/auth/presentation/pages/login_page.dart';
 import 'package:flutter/material.dart';
-import '../../../booking/presentation/pages/destinations_page.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -78,9 +82,7 @@ class HomePage extends StatelessWidget {
                       onPressed: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(
-                            builder: (_) => const LoginPage(),
-                          ),
+                          MaterialPageRoute(builder: (_) => const LoginPage()),
                         );
                       },
                       style: ElevatedButton.styleFrom(
@@ -93,7 +95,7 @@ class HomePage extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(vertical: 14),
                       ),
                       child: const Text(
-                        "Login",
+                        "Get Started",
                         style: TextStyle(
                           fontFamily: 'Poppins',
                           fontSize: 18,
@@ -105,36 +107,36 @@ class HomePage extends StatelessWidget {
                   const SizedBox(height: 16),
 
                   // Browse Destinations button
-                  SizedBox(
-                    width: double.infinity,
-                    height: 56,
-                    child: OutlinedButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const DestinationsPage(),
-                          ),
-                        );
-                      },
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: Colors.white,
-                        side: const BorderSide(color: Colors.white, width: 2),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                      ),
-                      child: const Text(
-                        "Browse Destinations",
-                        style: TextStyle(
-                          fontFamily: 'Poppins',
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ),
+                  // SizedBox(
+                  //   width: double.infinity,
+                  //   height: 56,
+                  //   child: OutlinedButton(
+                  //     onPressed: () {
+                  //       Navigator.push(
+                  //         context,
+                  //         MaterialPageRoute(
+                  //           builder: (_) => const DestinationsPage(),
+                  //         ),
+                  //       );
+                  //     },
+                  //     style: OutlinedButton.styleFrom(
+                  //       foregroundColor: Colors.white,
+                  //       side: const BorderSide(color: Colors.white, width: 2),
+                  //       shape: RoundedRectangleBorder(
+                  //         borderRadius: BorderRadius.circular(16),
+                  //       ),
+                  //       padding: const EdgeInsets.symmetric(vertical: 14),
+                  //     ),
+                  //     child: const Text(
+                  //       "Browse Destinations",
+                  //       style: TextStyle(
+                  //         fontFamily: 'Poppins',
+                  //         fontSize: 18,
+                  //         fontWeight: FontWeight.bold,
+                  //       ),
+                  //     ),
+                  //   ),
+                  // ),
                 ],
               ),
             ),

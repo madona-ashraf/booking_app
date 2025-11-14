@@ -1,10 +1,17 @@
+import 'dart:async';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+
 import '../../../../core/models/booking.dart';
-import '../../../../core/models/flight.dart';
+import '../../../booking/presentation/pages/flight_search_page.dart';
 
 class ProfilePage extends StatefulWidget {
-  const ProfilePage({super.key});
+  final VoidCallback? onBookFlight;
+
+  const ProfilePage({super.key, this.onBookFlight});
 
   @override
   State<ProfilePage> createState() => _ProfilePageState();
@@ -13,9 +20,11 @@ class ProfilePage extends StatefulWidget {
 class _ProfilePageState extends State<ProfilePage> {
   final String _userName = 'John Doe';
   final String _userEmail = 'john.doe@example.com';
-  final String _userPhone = '+1 234 567 8900';
-  
+
   List<Booking> _bookings = [];
+  bool _isLoading = true;
+  String? _errorMessage;
+  StreamSubscription<QuerySnapshot>? _bookingsSubscription;
 
   @override
   void initState() {
@@ -23,38 +32,126 @@ class _ProfilePageState extends State<ProfilePage> {
     _loadBookings();
   }
 
+  @override
+  void dispose() {
+    _bookingsSubscription?.cancel();
+    super.dispose();
+  }
+
   void _loadBookings() {
-    // Mock data - in real app, load from API
-    _bookings = [
-      Booking(
-        id: 'BK001',
-        userId: 'user_123',
-        flightId: 'flight_001',
-        passengerName: _userName,
-        passengerEmail: _userEmail,
-        passengerPhone: _userPhone,
-        numberOfPassengers: 1,
-        seatNumbers: ['A12'],
-        totalPrice: 450.0,
-        bookingDate: DateTime.now().subtract(const Duration(days: 5)),
-        status: BookingStatus.confirmed,
-        confirmationNumber: 'CONF123456',
-      ),
-      Booking(
-        id: 'BK002',
-        userId: 'user_123',
-        flightId: 'flight_002',
-        passengerName: _userName,
-        passengerEmail: _userEmail,
-        passengerPhone: _userPhone,
-        numberOfPassengers: 2,
-        seatNumbers: ['B15', 'B16'],
-        totalPrice: 890.0,
-        bookingDate: DateTime.now().subtract(const Duration(days: 15)),
-        status: BookingStatus.completed,
-        confirmationNumber: 'CONF789012',
-      ),
-    ];
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      setState(() {
+        _isLoading = false;
+        _errorMessage = 'User not logged in';
+      });
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    _bookingsSubscription = FirebaseFirestore.instance
+        .collection('bookings')
+        .where('userId', isEqualTo: user.uid)
+        .snapshots()
+        .listen(
+          (snapshot) {
+            try {
+              final bookings =
+                  snapshot.docs.map((doc) {
+                    final data = doc.data();
+
+                    // Handle bookingDate - check date (string), bookingDate, or timestamp
+                    DateTime bookingDate;
+                    if (data['date'] is String) {
+                      // Parse date string like "2025-11-09 16:50:00.000"
+                      try {
+                        bookingDate = DateTime.parse(data['date'] as String);
+                      } catch (e) {
+                        // If parsing fails, try timestamp
+                        if (data['timestamp'] is Timestamp) {
+                          bookingDate =
+                              (data['timestamp'] as Timestamp).toDate();
+                        } else {
+                          bookingDate = DateTime.now();
+                        }
+                      }
+                    } else if (data['bookingDate'] is Timestamp) {
+                      bookingDate = (data['bookingDate'] as Timestamp).toDate();
+                    } else if (data['bookingDate'] is String) {
+                      bookingDate = DateTime.parse(
+                        data['bookingDate'] as String,
+                      );
+                    } else if (data['timestamp'] is Timestamp) {
+                      // Fallback to timestamp if bookingDate doesn't exist
+                      bookingDate = (data['timestamp'] as Timestamp).toDate();
+                    } else {
+                      bookingDate = DateTime.now();
+                    }
+
+                    // Handle status - could be stored as string or enum name
+                    BookingStatus status;
+                    if (data['status'] is String) {
+                      final statusString = data['status'] as String;
+                      status = BookingStatus.values.firstWhere(
+                        (e) =>
+                            e.toString().split('.').last.toLowerCase() ==
+                            statusString.toLowerCase(),
+                        orElse: () => BookingStatus.pending,
+                      );
+                    } else {
+                      status = BookingStatus.pending;
+                    }
+
+                    return Booking(
+                      id: doc.id,
+                      userId: data['userId'] ?? user.uid,
+                      flightId: data['flightId'] ?? data['flightNumber'] ?? '',
+                      passengerName:
+                          data['passengerName'] ?? user.displayName ?? 'N/A',
+                      passengerEmail:
+                          data['passengerEmail'] ?? user.email ?? '',
+                      passengerPhone: data['passengerPhone'] ?? '',
+                      numberOfPassengers: data['numberOfPassengers'] ?? 1,
+                      seatNumbers: List<String>.from(data['seatNumbers'] ?? []),
+                      totalPrice:
+                          (data['totalPrice'] ?? data['price'] ?? 0).toDouble(),
+                      currency: data['currency'] ?? 'USD',
+                      bookingDate: bookingDate,
+                      status: status,
+                      paymentId: data['paymentId'],
+                      confirmationNumber:
+                          data['loc'] ??
+                          'BK${doc.id.substring(0, 8).toUpperCase()}',
+                    );
+                  }).toList();
+
+              // Sort by bookingDate in memory (most recent first) and limit to 10
+              bookings.sort((a, b) => b.bookingDate.compareTo(a.bookingDate));
+              final recentBookings = bookings.take(10).toList();
+
+              setState(() {
+                _bookings = recentBookings;
+                _isLoading = false;
+                _errorMessage = null;
+              });
+            } catch (e) {
+              setState(() {
+                _isLoading = false;
+                _errorMessage = 'Error loading bookings: $e';
+              });
+            }
+          },
+          onError: (error) {
+            setState(() {
+              _isLoading = false;
+              _errorMessage = 'Error fetching bookings: $error';
+            });
+          },
+        );
   }
 
   @override
@@ -64,19 +161,10 @@ class _ProfilePageState extends State<ProfilePage> {
       appBar: AppBar(
         title: const Text(
           'Profile',
-          style: TextStyle(
-            fontFamily: 'Poppins',
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.bold),
         ),
         backgroundColor: Colors.teal,
         foregroundColor: Colors.white,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.edit),
-            onPressed: _editProfile,
-          ),
-        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -84,9 +172,9 @@ class _ProfilePageState extends State<ProfilePage> {
           children: [
             _buildProfileHeader(),
             const SizedBox(height: 20),
-            _buildQuickActions(),
-            const SizedBox(height: 20),
             _buildBookingHistory(),
+            const SizedBox(height: 20),
+            _buildQuickActions(),
           ],
         ),
       ),
@@ -94,6 +182,10 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Widget _buildProfileHeader() {
+    User? user = FirebaseAuth.instance.currentUser;
+    final String? name = user?.displayName;
+    final String? email = user?.email;
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -112,15 +204,11 @@ class _ProfilePageState extends State<ProfilePage> {
           CircleAvatar(
             radius: 50,
             backgroundColor: Colors.teal.withOpacity(0.1),
-            child: const Icon(
-              Icons.person,
-              size: 50,
-              color: Colors.teal,
-            ),
+            child: const Icon(Icons.person, size: 50, color: Colors.teal),
           ),
           const SizedBox(height: 16),
           Text(
-            _userName,
+            name ?? _userName,
             style: const TextStyle(
               fontFamily: 'Poppins',
               fontSize: 24,
@@ -129,7 +217,7 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
           const SizedBox(height: 8),
           Text(
-            _userEmail,
+            email ?? _userEmail,
             style: TextStyle(
               fontFamily: 'Poppins',
               color: Colors.grey[600],
@@ -137,14 +225,6 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
           ),
           const SizedBox(height: 4),
-          Text(
-            _userPhone,
-            style: TextStyle(
-              fontFamily: 'Poppins',
-              color: Colors.grey[600],
-              fontSize: 16,
-            ),
-          ),
         ],
       ),
     );
@@ -167,15 +247,6 @@ class _ProfilePageState extends State<ProfilePage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Quick Actions',
-            style: TextStyle(
-              fontFamily: 'Poppins',
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 16),
           Row(
             children: [
               Expanded(
@@ -184,55 +255,46 @@ class _ProfilePageState extends State<ProfilePage> {
                   Icons.flight_takeoff,
                   Colors.blue,
                   () {
-                    // Navigate to flight search
+                    // Navigate to flight search using callback if provided, otherwise use Navigator
+                    if (widget.onBookFlight != null) {
+                      widget.onBookFlight!();
+                    } else {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const FlightSearchPage(),
+                        ),
+                      );
+                    }
                   },
                 ),
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: _buildActionCard(
-                  'My Bookings',
-                  Icons.book_online,
+                  'Logout',
+                  Icons.logout,
                   Colors.green,
                   () {
                     // Navigate to bookings
+                    FirebaseAuth.instance.signOut();
                   },
                 ),
               ),
             ],
           ),
           const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: _buildActionCard(
-                  'Settings',
-                  Icons.settings,
-                  Colors.orange,
-                  () {
-                    // Navigate to settings
-                  },
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _buildActionCard(
-                  'Support',
-                  Icons.help,
-                  Colors.purple,
-                  () {
-                    // Navigate to support
-                  },
-                ),
-              ),
-            ],
-          ),
         ],
       ),
     );
   }
 
-  Widget _buildActionCard(String title, IconData icon, Color color, VoidCallback onTap) {
+  Widget _buildActionCard(
+    String title,
+    IconData icon,
+    Color color,
+    VoidCallback onTap,
+  ) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -244,11 +306,7 @@ class _ProfilePageState extends State<ProfilePage> {
         ),
         child: Column(
           children: [
-            Icon(
-              icon,
-              color: color,
-              size: 32,
-            ),
+            Icon(icon, color: color, size: 32),
             const SizedBox(height: 8),
             Text(
               title,
@@ -293,32 +351,77 @@ class _ProfilePageState extends State<ProfilePage> {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              TextButton(
-                onPressed: () {
-                  // Navigate to all bookings
-                },
-                child: const Text(
-                  'View All',
-                  style: TextStyle(
-                    fontFamily: 'Poppins',
-                    color: Colors.teal,
-                    fontWeight: FontWeight.w600,
+              if (_bookings.isNotEmpty)
+                TextButton(
+                  onPressed: () {
+                    // Navigate to all bookings
+                  },
+                  child: const Text(
+                    'View All',
+                    style: TextStyle(
+                      fontFamily: 'Poppins',
+                      color: Colors.teal,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
-              ),
             ],
           ),
           const SizedBox(height: 16),
-          if (_bookings.isEmpty)
+          if (_isLoading)
             const Center(
               child: Padding(
                 padding: EdgeInsets.all(32),
-                child: Text(
-                  'No bookings yet',
-                  style: TextStyle(
-                    fontFamily: 'Poppins',
-                    color: Colors.grey,
-                  ),
+                child: CircularProgressIndicator(color: Colors.teal),
+              ),
+            )
+          else if (_errorMessage != null)
+            Center(
+              child: Padding(
+                padding: const EdgeInsets.all(32),
+                child: Column(
+                  children: [
+                    Icon(Icons.error_outline, color: Colors.red[300], size: 48),
+                    const SizedBox(height: 8),
+                    Text(
+                      _errorMessage!,
+                      style: TextStyle(
+                        fontFamily: 'Poppins',
+                        color: Colors.grey[600],
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 8),
+                    TextButton(
+                      onPressed: _loadBookings,
+                      child: const Text(
+                        'Retry',
+                        style: TextStyle(
+                          fontFamily: 'Poppins',
+                          color: Colors.teal,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            )
+          else if (_bookings.isEmpty)
+            const Center(
+              child: Padding(
+                padding: EdgeInsets.all(32),
+                child: Column(
+                  children: [
+                    Icon(Icons.flight_takeoff, size: 48, color: Colors.grey),
+                    SizedBox(height: 8),
+                    Text(
+                      'No bookings yet',
+                      style: TextStyle(
+                        fontFamily: 'Poppins',
+                        color: Colors.grey,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             )
@@ -373,18 +476,12 @@ class _ProfilePageState extends State<ProfilePage> {
           const SizedBox(height: 8),
           Text(
             '${booking.numberOfPassengers} ${booking.numberOfPassengers == 1 ? 'Passenger' : 'Passengers'}',
-            style: TextStyle(
-              fontFamily: 'Poppins',
-              color: Colors.grey[600],
-            ),
+            style: TextStyle(fontFamily: 'Poppins', color: Colors.grey[600]),
           ),
           const SizedBox(height: 4),
           Text(
             'Seats: ${booking.seatNumbers.join(', ')}',
-            style: TextStyle(
-              fontFamily: 'Poppins',
-              color: Colors.grey[600],
-            ),
+            style: TextStyle(fontFamily: 'Poppins', color: Colors.grey[600]),
           ),
           const SizedBox(height: 8),
           Row(
@@ -425,75 +522,5 @@ class _ProfilePageState extends State<ProfilePage> {
       case BookingStatus.completed:
         return Colors.blue;
     }
-  }
-
-  void _editProfile() {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      builder: (context) => Container(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Edit Profile',
-              style: TextStyle(
-                fontFamily: 'Poppins',
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 20),
-            TextFormField(
-              initialValue: _userName,
-              decoration: const InputDecoration(
-                labelText: 'Full Name',
-                prefixIcon: Icon(Icons.person),
-              ),
-            ),
-            const SizedBox(height: 16),
-            TextFormField(
-              initialValue: _userEmail,
-              decoration: const InputDecoration(
-                labelText: 'Email',
-                prefixIcon: Icon(Icons.email),
-              ),
-            ),
-            const SizedBox(height: 16),
-            TextFormField(
-              initialValue: _userPhone,
-              decoration: const InputDecoration(
-                labelText: 'Phone',
-                prefixIcon: Icon(Icons.phone),
-              ),
-            ),
-            const SizedBox(height: 20),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Profile updated successfully'),
-                      backgroundColor: Colors.green,
-                    ),
-                  );
-                },
-                child: const Text(
-                  'Save Changes',
-                  style: TextStyle(
-                    fontFamily: 'Poppins',
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
   }
 }

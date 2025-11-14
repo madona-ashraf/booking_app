@@ -1,189 +1,127 @@
-import 'package:bookingapp/core/constants/app_colors.dart';
-import 'package:flutter/material.dart';
-import 'login_page.dart';
-import '../../../home/presentation/pages/home_page.dart';
+import 'package:bookingapp/features/auth/presentation/pages/login_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../cubit/auth_cubit.dart';
 
-class RegisterPage extends StatefulWidget {
+class RegisterPage extends StatelessWidget {
   const RegisterPage({super.key});
 
   @override
-  State<RegisterPage> createState() => _RegisterPageState();
-}
-
-class _RegisterPageState extends State<RegisterPage> {
-  final _nameController = TextEditingController();
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
-
-  @override
   Widget build(BuildContext context) {
-    return Scaffold( appBar: AppBar(backgroundColor: Colors.teal,),
-      backgroundColor: Colors.white,
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: SingleChildScrollView(
+    final formKey = GlobalKey<FormState>();
+    final emailController = TextEditingController();
+    final passwordController = TextEditingController();
+    final nameController = TextEditingController();
+
+    return BlocListener<AuthCubit, AuthState>(
+      listener: (context, state) async {
+        if (state is AuthError) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(state.message)));
+        } else if (state is Authenticated) {
+          // Update user display name
+          final user = FirebaseAuth.instance.currentUser;
+          if (user != null) {
+            await user.updateDisplayName(nameController.text.trim());
+            await user.reload();
+            print("Updated displayName: ${user.displayName}");
+          }
+          // Navigation is handled by AuthWrapper in main.dart
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text(
+            'Register',
+            style: TextStyle(color: Colors.white, fontSize: 30),
+            textAlign: TextAlign.center,
+          ),
+          backgroundColor: Colors.teal,
+        ),
+        body: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+          child: Form(
+            key: formKey,
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(height: 40),
-
-                // ===== Title =====
-                const Text(
-                  "Create Account",
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'Poppins',
+                TextFormField(
+                  controller: nameController,
+                  validator:
+                      (value) => value!.isEmpty ? 'Enter your name' : null,
+                  decoration: const InputDecoration(
+                    labelText: 'Name',
+                    prefixIcon: Icon(Icons.person),
                   ),
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  "Sign up to start booking your flights.",
-                  style: TextStyle(
-                    color: Colors.grey[600],
-                    fontSize: 16,
-                    fontFamily: 'Poppins',
+                const SizedBox(height: 10),
+                TextFormField(
+                  controller: emailController,
+                  validator:
+                      (value) => value!.isEmpty ? 'Enter your email' : null,
+                  decoration: const InputDecoration(
+                    labelText: 'Email',
+                    prefixIcon: Icon(Icons.mail_outline),
                   ),
                 ),
-                const SizedBox(height: 40),
-
-                // ===== Name =====
-                const Text(
-                  "Full Name",
-                  style: TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 16,
-                    fontFamily: 'Poppins',
-                  ),
-                ),
-                const SizedBox(height: 8),
-                TextField(
-                  controller: _nameController,
-                  decoration: InputDecoration(
-                    hintText: "Enter your name",
-                    hintStyle: TextStyle(fontFamily: 'Poppins', color: Colors.grey[400]),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 20),
-
-                // ===== Email =====
-                const Text(
-                  "Email",
-                  style: TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 16,
-                    fontFamily: 'Poppins',
-                  ),
-                ),
-                const SizedBox(height: 8),
-                TextField(
-                  controller: _emailController,
-                  decoration: InputDecoration(
-                    hintText: "Enter your email",
-                    hintStyle: TextStyle(fontFamily: 'Poppins', color: Colors.grey[400]),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 20),
-
-                // ===== Password =====
-                const Text(
-                  "Password",
-                  style: TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 16,
-                    fontFamily: 'Poppins',
-                  ),
-                ),
-                const SizedBox(height: 8),
-                TextField(
-                  controller: _passwordController,
+                const SizedBox(height: 10),
+                TextFormField(
+                  controller: passwordController,
                   obscureText: true,
-                  decoration: InputDecoration(
-                    hintText: "Create a password",
-                    hintStyle: TextStyle(fontFamily: 'Poppins', color: Colors.grey[400]),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
+                  validator:
+                      (value) => value!.isEmpty ? 'Enter your password' : null,
+                  decoration: const InputDecoration(
+                    labelText: 'Password',
+                    prefixIcon: Icon(Icons.lock),
                   ),
                 ),
-                const SizedBox(height: 30),
-
-                // ===== Register Button =====
+                const SizedBox(height: 10),
+                TextFormField(
+                  obscureText: true,
+                  validator: (value) {
+                    if (value!.isEmpty) return 'Confirm your password';
+                    if (value != passwordController.text) {
+                      return 'Passwords do not match';
+                    }
+                    return null;
+                  },
+                  decoration: const InputDecoration(
+                    labelText: 'Confirm Password',
+                    prefixIcon: Icon(Icons.lock),
+                  ),
+                ),
+                const SizedBox(height: 20),
                 SizedBox(
+                  height: 50,
                   width: double.infinity,
-                  height: 56,
                   child: ElevatedButton(
+                    onPressed: () {
+                      if (formKey.currentState!.validate()) {
+                        context.read<AuthCubit>().register(
+                          emailController.text.trim(),
+                          passwordController.text.trim(),
+                        );
+                      }
+                    },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.teal,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
                     ),
-                    onPressed: ()async {
-                      try {
-  final credential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
-    email: _emailController.text,
-    password: _passwordController.text,
-  );
-} on FirebaseAuthException catch (e) {
-  if (e.code == 'weak-password') {
-    print('The password provided is too weak.');
-  } else if (e.code == 'email-already-in-use') {
-    print('The account already exists for that email.');
-  }
-} catch (e) {
-  print(e);
-}
-                      
-                    },
                     child: const Text(
-                      "Sign Up",
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontFamily: 'Poppins',
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      'Create an account',
+                      style: TextStyle(fontSize: 22),
                     ),
                   ),
                 ),
-
-                const SizedBox(height: 20),
-
-                // ===== Login Navigation =====
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Text(
-                      "Already have an account?",
-                      style: TextStyle(fontFamily: 'Poppins'),
-                    ),
-                    TextButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => const LoginPage()),
-                        );
-                      },
-                      child: const Text(
-                        "Login",
-                        style: TextStyle(
-                          fontFamily: 'Poppins',
-                          fontWeight: FontWeight.bold,
-                        
-                        ),
-                      ),
-                    ),
-                  ],
+                TextButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const LoginPage()),
+                    );
+                  },
+                  child: const Text('Already have an account? Login'),
                 ),
               ],
             ),

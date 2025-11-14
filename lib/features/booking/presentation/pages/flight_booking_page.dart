@@ -1,8 +1,9 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../core/models/flight.dart';
-import 'booking_confirmation_page.dart';
 
 class FlightBookingPage extends StatefulWidget {
   final Flight flight;
@@ -22,10 +23,6 @@ class FlightBookingPage extends StatefulWidget {
 
 class _FlightBookingPageState extends State<FlightBookingPage> {
   final _formKey = GlobalKey<FormState>();
-  final _nameController = TextEditingController();
-  final _emailController = TextEditingController();
-  final _phoneController = TextEditingController();
-  final _passportController = TextEditingController();
 
   List<String> _selectedSeats = [];
   String _selectedMeal = 'Standard';
@@ -50,8 +47,6 @@ class _FlightBookingPageState extends State<FlightBookingPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildFlightSummary(),
-            const SizedBox(height: 20),
-            _buildPassengerDetails(),
             const SizedBox(height: 20),
             _buildSeatSelection(),
             const SizedBox(height: 20),
@@ -186,110 +181,6 @@ class _FlightBookingPageState extends State<FlightBookingPage> {
     );
   }
 
-  Widget _buildPassengerDetails() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Form(
-        key: _formKey,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Passenger Details',
-              style: TextStyle(
-                fontFamily: 'Poppins',
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 16),
-            TextFormField(
-              controller: _nameController,
-              decoration: InputDecoration(
-                labelText: 'Full Name',
-                prefixIcon: const Icon(Icons.person),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter your full name';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 16),
-            TextFormField(
-              controller: _emailController,
-              decoration: InputDecoration(
-                labelText: 'Email',
-                prefixIcon: const Icon(Icons.email),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter your email';
-                }
-                if (!value.contains('@')) {
-                  return 'Please enter a valid email';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 16),
-            TextFormField(
-              controller: _phoneController,
-              decoration: InputDecoration(
-                labelText: 'Phone Number',
-                prefixIcon: const Icon(Icons.phone),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter your phone number';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 16),
-            TextFormField(
-              controller: _passportController,
-              decoration: InputDecoration(
-                labelText: 'Passport Number',
-                prefixIcon: const Icon(Icons.credit_card),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter your passport number';
-                }
-                return null;
-              },
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget _buildSeatSelection() {
     return Container(
       padding: const EdgeInsets.all(16),
@@ -359,7 +250,7 @@ class _FlightBookingPageState extends State<FlightBookingPage> {
                       ),
                     ),
                     ...seats.map((seat) => _buildSeat('$row$seat')),
-                    const SizedBox(width: 20),
+
                     ...seats.map((seat) => _buildSeat('$row${seat + 6}')),
                   ],
                 ),
@@ -602,7 +493,23 @@ class _FlightBookingPageState extends State<FlightBookingPage> {
       width: double.infinity,
       height: 56,
       child: ElevatedButton(
-        onPressed: _proceedToPayment,
+        onPressed: () async {
+          saveBooking(
+            flightNumber: widget.flight.flightNumber,
+            location: widget.flight.departureCity,
+            date: widget.flight.departureTime.toString(),
+            price: widget.flight.price,
+          );
+
+          print(widget.flight.flightNumber);
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Booking successful!'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        },
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.teal,
           shape: RoundedRectangleBorder(
@@ -611,7 +518,7 @@ class _FlightBookingPageState extends State<FlightBookingPage> {
           elevation: 4,
         ),
         child: const Text(
-          'Proceed to Payment',
+          'Proceed',
           style: TextStyle(
             fontFamily: 'Poppins',
             fontSize: 18,
@@ -663,39 +570,37 @@ class _FlightBookingPageState extends State<FlightBookingPage> {
     );
   }
 
-  void _proceedToPayment() {
-    if (!_formKey.currentState!.validate()) {
-      return;
-    }
+  Future<void> saveBooking({
+    required String flightNumber,
+    required String location,
+    required String date,
+    required double price,
+  }) async {
+    try {
+      // 1️⃣ نجيب المستخدم الحالي
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) {
+        throw Exception("User not logged in");
+      }
 
-    if (_selectedSeats.length != widget.passengers) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please select seats for all passengers'),
-          backgroundColor: Colors.red,
-        ),
-      );
-      return;
-    }
+      // 2️⃣ نجهّز بيانات الرحلة
+      final bookingData = {
+        'flightNumber': flightNumber,
+        'loc': location,
+        'date': date,
+        'price': price,
+        'userId': user.uid,
+        'timestamp': FieldValue.serverTimestamp(),
+      };
 
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder:
-            (context) => BookingConfirmationPage(
-              flight: widget.flight,
-              passengers: widget.passengers,
-              classType: widget.classType,
-              passengerName: _nameController.text,
-              passengerEmail: _emailController.text,
-              passengerPhone: _phoneController.text,
-              passportNumber: _passportController.text,
-              selectedSeats: _selectedSeats,
-              selectedMeal: _selectedMeal,
-              hasInsurance: _hasInsurance,
-              hasExtraBaggage: _hasExtraBaggage,
-            ),
-      ),
-    );
+      // 3️⃣ نضيفها في Firestore
+      await FirebaseFirestore.instance
+          .collection('bookings') // اسم التجميعة (collection)
+          .add(bookingData);
+
+      print("✅ Booking saved successfully");
+    } catch (e) {
+      print("❌ Error saving booking: $e");
+    }
   }
 }

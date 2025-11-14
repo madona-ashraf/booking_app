@@ -44,12 +44,15 @@ dependencies:
   # HTTP requests
   http: ^1.2.2
   
+  # URL launcher
+  url_launcher: ^6.3.1
+  
   # Local storage
   shared_preferences: ^2.3.2
   
   # Date and time formatting
   intl: ^0.19.0
-  
+
   # Icons
   flutter_svg: ^2.0.10+1
   
@@ -59,6 +62,11 @@ dependencies:
   # Firebase
   firebase_core: ^3.6.0
   firebase_auth: ^5.3.1
+  flutter_bloc: ^9.1.1
+  hydrated_bloc: ^10.1.1
+  path_provider: ^2.1.5
+  curved_navigation_bar: ^1.0.6
+  cloud_firestore: ^5.6.12
 
 dev_dependencies:
   flutter_test:
