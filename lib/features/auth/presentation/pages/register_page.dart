@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../navigation/presentation/pages/main_navigation_page.dart';
 import '../cubit/auth_cubit.dart';
 
 class RegisterPage extends StatelessWidget {
@@ -23,12 +24,21 @@ class RegisterPage extends StatelessWidget {
           ).showSnackBar(SnackBar(content: Text(state.message)));
         } else if (state is Authenticated) {
           // Update user display name
+
           final user = FirebaseAuth.instance.currentUser;
           if (user != null) {
             await user.updateDisplayName(nameController.text.trim());
             await user.reload();
             print("Updated displayName: ${user.displayName}");
+
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const MainNavigationPage(),
+              ),
+            );
           }
+
           // Navigation is handled by AuthWrapper in main.dart
         }
       },
@@ -47,6 +57,7 @@ class RegisterPage extends StatelessWidget {
             key: formKey,
             child: Column(
               children: [
+                Container(child: Image.asset('assets/images/logo.jpeg')),
                 TextFormField(
                   controller: nameController,
                   validator:

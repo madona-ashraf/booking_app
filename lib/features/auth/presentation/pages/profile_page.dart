@@ -25,6 +25,7 @@ class _ProfilePageState extends State<ProfilePage> {
   bool _isLoading = true;
   String? _errorMessage;
   StreamSubscription<QuerySnapshot>? _bookingsSubscription;
+  bool _showAllBookings = false;
 
   @override
   void initState() {
@@ -51,6 +52,7 @@ class _ProfilePageState extends State<ProfilePage> {
     setState(() {
       _isLoading = true;
       _errorMessage = null;
+      _showAllBookings = false;
     });
 
     _bookingsSubscription = FirebaseFirestore.instance
@@ -351,14 +353,14 @@ class _ProfilePageState extends State<ProfilePage> {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              if (_bookings.isNotEmpty)
+              if (_bookings.length > 3)
                 TextButton(
                   onPressed: () {
-                    // Navigate to all bookings
+                    setState(() => _showAllBookings = !_showAllBookings);
                   },
-                  child: const Text(
-                    'View All',
-                    style: TextStyle(
+                  child: Text(
+                    _showAllBookings ? 'Show Less' : 'View All',
+                    style: const TextStyle(
                       fontFamily: 'Poppins',
                       color: Colors.teal,
                       fontWeight: FontWeight.w600,
@@ -426,7 +428,9 @@ class _ProfilePageState extends State<ProfilePage> {
               ),
             )
           else
-            ..._bookings.map((booking) => _buildBookingCard(booking)).toList(),
+            ...(_showAllBookings ? _bookings : _bookings.take(3))
+                .map((booking) => _buildBookingCard(booking))
+                .toList(),
         ],
       ),
     );

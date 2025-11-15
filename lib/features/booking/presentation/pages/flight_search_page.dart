@@ -4,20 +4,22 @@ import 'package:intl/intl.dart';
 import 'flight_results_page.dart';
 
 class FlightSearchPage extends StatefulWidget {
-  const FlightSearchPage({super.key});
+  final String? initialDestination;
+
+  const FlightSearchPage({super.key, this.initialDestination});
 
   @override
   State<FlightSearchPage> createState() => _FlightSearchPageState();
 }
 
 class _FlightSearchPageState extends State<FlightSearchPage> {
-  final TextEditingController _fromController = TextEditingController();
-  final TextEditingController _toController = TextEditingController();
   DateTime _departureDate = DateTime.now().add(const Duration(days: 1));
   DateTime? _returnDate;
   double _passengers = 1;
   String _classType = 'Economy';
   bool _isRoundTrip = false;
+  String? _selectedFromCity;
+  String? _selectedToCity;
 
   final List<String> _popularCities = [
     'New York',
@@ -29,6 +31,34 @@ class _FlightSearchPageState extends State<FlightSearchPage> {
     'Los Angeles',
     'Istanbul',
   ];
+
+  List<String> get _availableCities {
+    final cities = List<String>.from(_popularCities);
+    if (widget.initialDestination != null &&
+        !cities.contains(widget.initialDestination)) {
+      cities.add(widget.initialDestination!);
+    }
+    return cities;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    if (_popularCities.isNotEmpty) {
+      _selectedFromCity = _popularCities.first;
+      // Use initialDestination if provided, otherwise use second city
+      if (widget.initialDestination != null) {
+        _selectedToCity = widget.initialDestination;
+      } else {
+        _selectedToCity =
+            _popularCities.length > 1
+                ? _popularCities[1]
+                : _popularCities.first;
+      }
+    } else if (widget.initialDestination != null) {
+      _selectedToCity = widget.initialDestination;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -151,9 +181,11 @@ class _FlightSearchPageState extends State<FlightSearchPage> {
             children: [
               Expanded(
                 child: _buildLocationField(
-                  controller: _fromController,
                   label: 'From',
                   icon: Icons.flight_takeoff,
+                  value: _selectedFromCity,
+                  onChanged:
+                      (value) => setState(() => _selectedFromCity = value),
                 ),
               ),
               const SizedBox(width: 16),
@@ -175,9 +207,10 @@ class _FlightSearchPageState extends State<FlightSearchPage> {
               const SizedBox(width: 16),
               Expanded(
                 child: _buildLocationField(
-                  controller: _toController,
                   label: 'To',
                   icon: Icons.flight_land,
+                  value: _selectedToCity,
+                  onChanged: (value) => setState(() => _selectedToCity = value),
                 ),
               ),
             ],
@@ -222,9 +255,10 @@ class _FlightSearchPageState extends State<FlightSearchPage> {
   }
 
   Widget _buildLocationField({
-    required TextEditingController controller,
     required String label,
     required IconData icon,
+    required String? value,
+    required ValueChanged<String?> onChanged,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -238,10 +272,23 @@ class _FlightSearchPageState extends State<FlightSearchPage> {
           ),
         ),
         const SizedBox(height: 8),
-        TextField(
-          controller: controller,
+        DropdownButtonFormField<String>(
+          value: value,
+          isExpanded: true,
+          items:
+              _availableCities
+                  .map(
+                    (city) => DropdownMenuItem(
+                      value: city,
+                      child: Text(
+                        city,
+                        style: const TextStyle(fontFamily: 'Poppins'),
+                      ),
+                    ),
+                  )
+                  .toList(),
+          onChanged: onChanged,
           decoration: InputDecoration(
-            hintText: 'Enter city or airport',
             prefixIcon: Icon(icon, color: Colors.teal),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
@@ -251,6 +298,10 @@ class _FlightSearchPageState extends State<FlightSearchPage> {
               borderRadius: BorderRadius.circular(12),
               borderSide: const BorderSide(color: Colors.teal),
             ),
+          ),
+          hint: const Text(
+            'Select a city',
+            style: TextStyle(fontFamily: 'Poppins'),
           ),
         ),
       ],
@@ -395,7 +446,7 @@ class _FlightSearchPageState extends State<FlightSearchPage> {
             itemBuilder: (context, index) {
               final city = _popularCities[index];
               return GestureDetector(
-                onTap: () => _toController.text = city,
+                onTap: () => setState(() => _selectedToCity = city),
                 child: Container(
                   width: 80,
                   margin: const EdgeInsets.only(right: 12),
@@ -466,9 +517,11 @@ class _FlightSearchPageState extends State<FlightSearchPage> {
   }
 
   void _swapLocations() {
-    final temp = _fromController.text;
-    _fromController.text = _toController.text;
-    _toController.text = temp;
+    setState(() {
+      final temp = _selectedFromCity;
+      _selectedFromCity = _selectedToCity;
+      _selectedToCity = temp;
+    });
   }
 
   Future<void> _selectDate(BuildContext context, bool isDeparture) async {
@@ -607,7 +660,7 @@ class _FlightSearchPageState extends State<FlightSearchPage> {
   }
 
   void _searchFlights() {
-    if (_fromController.text.isEmpty || _toController.text.isEmpty) {
+    if ((_selectedFromCity ?? '').isEmpty || (_selectedToCity ?? '').isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Please enter departure and destination cities'),
@@ -622,8 +675,8 @@ class _FlightSearchPageState extends State<FlightSearchPage> {
       MaterialPageRoute(
         builder:
             (context) => FlightResultsPage(
-              departureCity: _fromController.text,
-              arrivalCity: _toController.text,
+              departureCity: _selectedFromCity!,
+              arrivalCity: _selectedToCity!,
               departureDate: _departureDate,
               returnDate:
                   _returnDate ?? _departureDate.add(const Duration(days: 1)),

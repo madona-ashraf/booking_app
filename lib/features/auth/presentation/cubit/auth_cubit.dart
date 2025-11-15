@@ -1,8 +1,11 @@
 // auth_cubit.dart
 import 'dart:async';
+
 import 'package:equatable/equatable.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 part 'auth_state.dart';
 
@@ -58,6 +61,64 @@ class AuthCubit extends Cubit<AuthState> {
   Future<void> logout() async {
     await _auth.signOut();
     emit(Unauthenticated());
+  }
+
+  Future<void> signInWithGoogle() async {
+    try {
+      emit(Loading());
+      // Trigger Google sign-in flow
+      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+
+      if (googleUser == null) {
+        emit(AuthError("Google Sign-In cancelled"));
+        return;
+      }
+
+      // Obtain auth details
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
+
+      // Create new credential
+      final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      // Sign in with Firebase
+      final userCredential =
+          await FirebaseAuth.instance.signInWithCredential(credential);
+      emit(Authenticated(email: userCredential.user?.email ?? ''));
+    } catch (e) {
+      emit(AuthError(e.toString()));
+    }
+  }
+
+  Future<void> signInWithFacebook() async {
+    try {
+      emit(Loading());
+      final LoginResult result = await FacebookAuth.instance.login();
+
+      if (result.status != LoginStatus.success) {
+        emit(AuthError("Facebook login failed: ${result.message}"));
+        return;
+      }
+
+      final accessToken = result.accessToken;
+      if (accessToken == null) {
+        emit(AuthError("Facebook login failed: No access token"));
+        return;
+      }
+
+      final OAuthCredential credential = FacebookAuthProvider.credential(
+        accessToken.tokenString,
+      );
+
+      final userCredential =
+          await FirebaseAuth.instance.signInWithCredential(credential);
+      emit(Authenticated(email: userCredential.user?.email ?? ''));
+    } catch (e) {
+      emit(AuthError(e.toString()));
+    }
   }
 
   @override

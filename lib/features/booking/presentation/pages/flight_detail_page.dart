@@ -63,26 +63,17 @@ class FlightDetailPage extends StatelessWidget {
             const SizedBox(height: 20),
 
             // Title and location
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            Column(
               children: [
-                Text(
-                  "$flightName, $location",
-                  style: const TextStyle(
-                    fontFamily: 'Poppins',
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
                 Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Icon(Icons.star, color: Colors.amber, size: 20),
                     Text(
-                      rating.toString(),
+                      "$flightName, $location",
                       style: const TextStyle(
                         fontFamily: 'Poppins',
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   ],
@@ -92,15 +83,15 @@ class FlightDetailPage extends StatelessWidget {
             const SizedBox(height: 12),
 
             // Price display
-            Text(
-              "\$$price / person",
-              style: const TextStyle(
-                fontFamily: 'Poppins',
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Colors.teal,
-              ),
-            ),
+            // Text(
+            //   "\$$price / person",
+            //   style: const TextStyle(
+            //     fontFamily: 'Poppins',
+            //     fontSize: 20,
+            //     fontWeight: FontWeight.bold,
+            //     color: Colors.teal,
+            //   ),
+            // ),
             const SizedBox(height: 20),
 
             // Flight description

@@ -34,6 +34,7 @@ class _FlightResultsPageState extends State<FlightResultsPage> {
   bool _isLoading = true;
   String? _errorMessage;
   String _sortBy = 'price';
+  bool _isPriceAscending = true;
   final double _maxPrice = 1000.0;
   final bool _showFilters = false;
   final AmadeusService _amadeusService = AmadeusService();
@@ -106,6 +107,9 @@ class _FlightResultsPageState extends State<FlightResultsPage> {
       switch (_sortBy) {
         case 'price':
           _filteredFlights.sort((a, b) => a.price.compareTo(b.price));
+          if (!_isPriceAscending) {
+            _filteredFlights = _filteredFlights.reversed.toList();
+          }
           break;
         case 'duration':
           _filteredFlights.sort((a, b) => a.duration.compareTo(b.duration));
@@ -185,27 +189,56 @@ class _FlightResultsPageState extends State<FlightResultsPage> {
                   ),
                 ),
                 // Sort Dropdown
-                DropdownButton<String>(
-                  value: _sortBy,
-                  underline: Container(),
-                  items: const [
-                    DropdownMenuItem(value: 'price', child: Text('Price')),
-                    DropdownMenuItem(
-                      value: 'duration',
-                      child: Text('Duration'),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    DropdownButton<String>(
+                      value: _sortBy,
+                      underline: Container(),
+                      items: const [
+                        DropdownMenuItem(value: 'price', child: Text('Price')),
+                        DropdownMenuItem(
+                          value: 'duration',
+                          child: Text('Duration'),
+                        ),
+                        DropdownMenuItem(
+                          value: 'departure',
+                          child: Text('Departure'),
+                        ),
+                        DropdownMenuItem(
+                          value: 'rating',
+                          child: Text('Rating'),
+                        ),
+                      ],
+                      onChanged: (value) {
+                        if (value == null) return;
+                        setState(() {
+                          _sortBy = value;
+                          _sortFlights();
+                        });
+                      },
                     ),
-                    DropdownMenuItem(
-                      value: 'departure',
-                      child: Text('Departure'),
-                    ),
-                    DropdownMenuItem(value: 'rating', child: Text('Rating')),
+                    if (_sortBy == 'price')
+                      IconButton(
+                        tooltip:
+                            _isPriceAscending
+                                ? 'Sort price high → low'
+                                : 'Sort price low → high',
+                        icon: Icon(
+                          _isPriceAscending
+                              ? Icons.arrow_upward
+                              : Icons.arrow_downward,
+                          color: Colors.teal,
+                          size: 20,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _isPriceAscending = !_isPriceAscending;
+                            _sortFlights();
+                          });
+                        },
+                      ),
                   ],
-                  onChanged: (value) {
-                    setState(() {
-                      _sortBy = value!;
-                      _sortFlights();
-                    });
-                  },
                 ),
               ],
             ),
