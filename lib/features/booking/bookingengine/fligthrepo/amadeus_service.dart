@@ -9,8 +9,8 @@ class AmadeusService {
   static const String _tokenUrl = '$_baseUrl/v1/security/oauth2/token';
   static const String _flightOffersUrl = '$_baseUrl/v2/shopping/flight-offers';
 
-  static const String _clientId = 'mZuWoMjXITmm0Deugy7GlGv95cmRfdez';
-  static const String _clientSecret = 'VfoBl3kJstHzGsAJ';
+  static const String _clientId = '';
+  static const String _clientSecret = '';
 
   String? _accessToken;
   DateTime? _tokenExpiry;
@@ -139,6 +139,29 @@ class AmadeusService {
     }
 
     return flights;
+  }
+
+  Future<void> getSeatMap(String flightOfferId, String accessToken) async {
+    final url = Uri.parse(
+      'https://test.api.amadeus.com/v1/shopping/seatmaps?flight-order-id=$flightOfferId',
+    );
+
+    final response = await http.get(
+      url,
+      headers: {
+        'Authorization': 'Bearer $accessToken',
+        'Content-Type': 'application/json',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      for (var seat in data['data']) {
+        print('Seat: ${seat['seatNumber']} - ${seat['availability']}');
+      }
+    } else {
+      print('Error: ${response.body}');
+    }
   }
 
   /// Parse a single flight offer to Flight model

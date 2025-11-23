@@ -85,8 +85,9 @@ class AuthCubit extends Cubit<AuthState> {
       );
 
       // Sign in with Firebase
-      final userCredential =
-          await FirebaseAuth.instance.signInWithCredential(credential);
+      final userCredential = await FirebaseAuth.instance.signInWithCredential(
+        credential,
+      );
       emit(Authenticated(email: userCredential.user?.email ?? ''));
     } catch (e) {
       emit(AuthError(e.toString()));
@@ -113,13 +114,26 @@ class AuthCubit extends Cubit<AuthState> {
         accessToken.tokenString,
       );
 
-      final userCredential =
-          await FirebaseAuth.instance.signInWithCredential(credential);
+      final userCredential = await FirebaseAuth.instance.signInWithCredential(
+        credential,
+      );
       emit(Authenticated(email: userCredential.user?.email ?? ''));
     } catch (e) {
       emit(AuthError(e.toString()));
     }
   }
+
+  // Future<void> signinYahoo() async {
+  //   // Placeholder for Yahoo sign-in implementation
+  //   Future<UserCredential> signInWithYahoo() async {
+  //     final yahooProvider = YahooAuthProvider();
+  //     if (kIsWeb) {
+  //       await _auth.signInWithPopup(yahooProvider);
+  //     } else {
+  //       await _auth.signInWithProvider(yahooProvider);
+  //     }
+  //   }
+  // }
 
   @override
   Future<void> close() {

@@ -70,6 +70,8 @@ dependencies:
   curved_navigation_bar: ^1.0.6
   cloud_firestore: ^5.6.12
 
+  
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 
 class AppBottomNavigation extends StatelessWidget {
   final int currentIndex;
@@ -12,30 +13,35 @@ class AppBottomNavigation extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BottomNavigationBar(
-      currentIndex: currentIndex,
+    // Use CurvedNavigationBar for a curved/convex-style bottom navigation.
+    final items = <Widget>[
+      Icon(
+        currentIndex == 0 ? Icons.flight : Icons.flight_outlined,
+        size: 24,
+        color: currentIndex == 0 ? Colors.teal : Colors.grey,
+      ),
+      Icon(
+        currentIndex == 1 ? Icons.person : Icons.person_outline,
+        size: 24,
+        color: currentIndex == 1 ? Colors.teal : Colors.grey,
+      ),
+      Icon(
+        currentIndex == 2 ? Icons.newspaper : Icons.newspaper_outlined,
+        size: 24,
+        color: currentIndex == 2 ? Colors.teal : Colors.grey,
+      ),
+    ];
+
+    return CurvedNavigationBar(
+      index: currentIndex,
+      items: items,
       onTap: onTap,
-      selectedItemColor: Colors.teal,
-      unselectedItemColor: Colors.grey,
-      type: BottomNavigationBarType.fixed,
-      items: const [
-        BottomNavigationBarItem(
-          icon: Icon(Icons.flight_outlined),
-          activeIcon: Icon(Icons.flight),
-          label: 'Search Flights',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.person_outline),
-          activeIcon: Icon(Icons.person),
-          label: 'Profile',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.newspaper_outlined),
-          activeIcon: Icon(Icons.newspaper),
-          label: 'News Page',
-        ),
-      ],
+      color: Colors.white,
+      buttonBackgroundColor: Colors.teal,
+      backgroundColor: Colors.transparent,
+      height: 60,
+      animationDuration: const Duration(milliseconds: 300),
+      animationCurve: Curves.easeInOut,
     );
   }
 }
-

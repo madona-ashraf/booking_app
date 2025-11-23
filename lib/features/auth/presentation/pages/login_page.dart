@@ -32,7 +32,6 @@ class _LoginPageState extends State<LoginPage> {
           'Login',
           style: TextStyle(color: Colors.white, fontSize: 30),
         ),
-        centerTitle: true,
       ),
       body: BlocListener<AuthCubit, AuthState>(
         listener: (context, state) {
@@ -149,7 +148,7 @@ class _LoginPageState extends State<LoginPage> {
                           height: 30,
                           width: 30,
                           errorBuilder: (context, error, stackTrace) {
-                            return const Icon(Icons.g_mobiledata, size: 24);
+                            return const Icon(Icons.g_mobiledata, size: 50);
                           },
                         ),
                         label: const Text(
@@ -162,40 +161,40 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                     ),
                     const SizedBox(height: 12),
-                    SizedBox(
-                      height: 50,
-                      width: double.infinity,
-                      child: OutlinedButton.icon(
-                        onPressed: () {
-                          context.read<AuthCubit>().signInWithFacebook();
-                        },
-                        icon: Container(
-                          width: 24,
-                          height: 24,
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF1877F2),
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: const Center(
-                            child: Text(
-                              'f',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ),
-                        label: const Text(
-                          'Continue with Facebook',
-                          style: TextStyle(fontSize: 16),
-                        ),
-                        style: OutlinedButton.styleFrom(
-                          side: BorderSide(color: Colors.grey[300]!),
-                        ),
-                      ),
-                    ),
+                    // SizedBox(
+                    //   height: 50,
+                    //   width: double.infinity,
+                    //   child: OutlinedButton.icon(
+                    //     onPressed: () {
+                    //       context.read<AuthCubit>().signInWithFacebook();
+                    //     },
+                    //     icon: Container(
+                    //       width: 24,
+                    //       height: 24,
+                    //       decoration: BoxDecoration(
+                    //         color: const Color(0xFF1877F2),
+                    //         borderRadius: BorderRadius.circular(4),
+                    //       ),
+                    //       child: const Center(
+                    //         child: Text(
+                    //           'f',
+                    //           style: TextStyle(
+                    //             color: Colors.white,
+                    //             fontSize: 18,
+                    //             fontWeight: FontWeight.bold,
+                    //           ),
+                    //         ),
+                    //       ),
+                    //     ),
+                    //     label: const Text(
+                    //       'Continue with Facebook',
+                    //       style: TextStyle(fontSize: 16),
+                    //     ),
+                    //     style: OutlinedButton.styleFrom(
+                    //       side: BorderSide(color: Colors.grey[300]!),
+                    //     ),
+                    //   ),
+                    // ),
                     const SizedBox(height: 15),
                     TextButton(
                       onPressed: () {
