@@ -9,8 +9,8 @@ class AmadeusPoiService {
   static const String _tokenUrl = '$_baseUrl/v1/security/oauth2/token';
   static const String _poiUrl = '$_baseUrl/v1/reference-data/locations/pois';
   // ⚠️ Replace with your credentials (preferably store securely)
-  static const String _clientId = 'mZuWoMjXITmm0Deugy7GlGv95cmRfdez';
-  static const String _clientSecret = 'VfoBl3kJstHzGsAJ';
+  static const String _clientId = 'z8DOvWDB3TRDi0LuhfAzDdLYG8yvIjIR';
+  static const String _clientSecret = '656fjObYFCKsQvo3';
 
   String? _accessToken;
   DateTime? _tokenExpiry;
@@ -60,20 +60,23 @@ class AmadeusPoiService {
 
       final response = await http.get(
         url,
-        headers: {'Authorization': 'Bearer $token', 'Accept': 'application/json'},
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Accept': 'application/json',
+        },
       );
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         final pois = data['data'] as List?;
-        
+
         print('✅ API Response: Found ${pois?.length ?? 0} POIs');
-        
+
         if (pois == null || pois.isEmpty) {
           print('⚠️ No POIs found in API response');
           return [];
         }
-        
+
         final attractions = parsePoiList(pois);
         print('✅ Parsed ${attractions.length} attractions');
         return attractions;

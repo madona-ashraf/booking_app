@@ -24,7 +24,7 @@ class FlightBookingPage extends StatefulWidget {
 class _FlightBookingPageState extends State<FlightBookingPage> {
   final _formKey = GlobalKey<FormState>();
 
-  List<String> _selectedSeats = [];
+  final List<String> _selectedSeats = [];
   String _selectedMeal = 'Standard';
   bool _hasInsurance = false;
   bool _hasExtraBaggage = false;
@@ -183,10 +183,11 @@ class _FlightBookingPageState extends State<FlightBookingPage> {
 
   Widget _buildSeatSelection() {
     return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-      stream: FirebaseFirestore.instance
-          .collection('flights')
-          .doc(widget.flight.id)
-          .snapshots(),
+      stream:
+          FirebaseFirestore.instance
+              .collection('flights')
+              .doc(widget.flight.id)
+              .snapshots(),
       builder: (context, snapshot) {
         List<String> reservedSeats = [];
         if (snapshot.hasData && snapshot.data!.exists) {
@@ -222,7 +223,10 @@ class _FlightBookingPageState extends State<FlightBookingPage> {
               const SizedBox(height: 16),
               Text(
                 'Select ${widget.passengers} ${widget.passengers == 1 ? 'seat' : 'seats'}',
-                style: TextStyle(fontFamily: 'Poppins', color: Colors.grey[600]),
+                style: TextStyle(
+                  fontFamily: 'Poppins',
+                  color: Colors.grey[600],
+                ),
               ),
               const SizedBox(height: 16),
               _buildSeatMap(reservedSeats),
@@ -264,8 +268,12 @@ class _FlightBookingPageState extends State<FlightBookingPage> {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    ...seats.map((seat) => _buildSeat('$row$seat', reservedSeats)),
-                    ...seats.map((seat) => _buildSeat('$row${seat + 6}', reservedSeats)),
+                    ...seats.map(
+                      (seat) => _buildSeat('$row$seat', reservedSeats),
+                    ),
+                    ...seats.map(
+                      (seat) => _buildSeat('$row${seat + 6}', reservedSeats),
+                    ),
                   ],
                 ),
               ),
@@ -301,25 +309,27 @@ class _FlightBookingPageState extends State<FlightBookingPage> {
     final isOccupied = reservedSeats.contains(seatNumber);
 
     return GestureDetector(
-      onTap: isOccupied
-          ? null
-          : () {
-              setState(() {
-                if (isSelected) {
-                  _selectedSeats.remove(seatNumber);
-                } else if (_selectedSeats.length < widget.passengers) {
-                  _selectedSeats.add(seatNumber);
-                }
-              });
-            },
+      onTap:
+          isOccupied
+              ? null
+              : () {
+                setState(() {
+                  if (isSelected) {
+                    _selectedSeats.remove(seatNumber);
+                  } else if (_selectedSeats.length < widget.passengers) {
+                    _selectedSeats.add(seatNumber);
+                  }
+                });
+              },
       child: Container(
         width: 24,
         height: 24,
         margin: const EdgeInsets.symmetric(horizontal: 2),
         decoration: BoxDecoration(
-          color: isOccupied
-              ? Colors.red[300]
-              : isSelected
+          color:
+              isOccupied
+                  ? Colors.red[300]
+                  : isSelected
                   ? Colors.teal
                   : Colors.grey[300],
           borderRadius: BorderRadius.circular(4),

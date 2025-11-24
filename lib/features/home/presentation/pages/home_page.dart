@@ -60,6 +60,7 @@ class _HomePageState extends State<HomePage> {
                       height: 1.3,
                     ),
                   ),
+
                   const SizedBox(height: 12),
 
                   const Text(
@@ -71,9 +72,7 @@ class _HomePageState extends State<HomePage> {
                       fontFamily: 'Poppins',
                     ),
                   ),
-
                   const SizedBox(height: 50),
-
                   // Search Flights button
                   SizedBox(
                     width: double.infinity,
