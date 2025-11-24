@@ -57,7 +57,7 @@ class RegisterPage extends StatelessWidget {
             key: formKey,
             child: Column(
               children: [
-                Container(child: Image.asset('assets/images/logo.jpeg')),
+                Image.asset('assets/images/logo.jpeg'),
                 TextFormField(
                   controller: nameController,
                   validator:

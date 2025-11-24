@@ -182,43 +182,58 @@ class _FlightBookingPageState extends State<FlightBookingPage> {
   }
 
   Widget _buildSeatSelection() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
+    return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+      stream: FirebaseFirestore.instance
+          .collection('flights')
+          .doc(widget.flight.id)
+          .snapshots(),
+      builder: (context, snapshot) {
+        List<String> reservedSeats = [];
+        if (snapshot.hasData && snapshot.data!.exists) {
+          final data = snapshot.data!.data();
+          if (data != null && data['reservedSeats'] != null) {
+            reservedSeats = List<String>.from(data['reservedSeats']);
+          }
+        }
+        return Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.withOpacity(0.1),
+                blurRadius: 10,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Seat Selection',
-            style: TextStyle(
-              fontFamily: 'Poppins',
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Seat Selection',
+                style: TextStyle(
+                  fontFamily: 'Poppins',
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Select ${widget.passengers} ${widget.passengers == 1 ? 'seat' : 'seats'}',
+                style: TextStyle(fontFamily: 'Poppins', color: Colors.grey[600]),
+              ),
+              const SizedBox(height: 16),
+              _buildSeatMap(reservedSeats),
+            ],
           ),
-          const SizedBox(height: 16),
-          Text(
-            'Select ${widget.passengers} ${widget.passengers == 1 ? 'seat' : 'seats'}',
-            style: TextStyle(fontFamily: 'Poppins', color: Colors.grey[600]),
-          ),
-          const SizedBox(height: 16),
-          _buildSeatMap(),
-        ],
-      ),
+        );
+      },
     );
   }
 
-  Widget _buildSeatMap() {
+  Widget _buildSeatMap(List<String> reservedSeats) {
     final rows = ['A', 'B', 'C', 'D', 'E', 'F'];
     final seats = List.generate(6, (index) => index + 1);
 
@@ -249,9 +264,8 @@ class _FlightBookingPageState extends State<FlightBookingPage> {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    ...seats.map((seat) => _buildSeat('$row$seat')),
-
-                    ...seats.map((seat) => _buildSeat('$row${seat + 6}')),
+                    ...seats.map((seat) => _buildSeat('$row$seat', reservedSeats)),
+                    ...seats.map((seat) => _buildSeat('$row${seat + 6}', reservedSeats)),
                   ],
                 ),
               ),
@@ -282,34 +296,30 @@ class _FlightBookingPageState extends State<FlightBookingPage> {
     );
   }
 
-  Widget _buildSeat(String seatNumber) {
+  Widget _buildSeat(String seatNumber, List<String> reservedSeats) {
     final isSelected = _selectedSeats.contains(seatNumber);
-    final isOccupied =
-        seatNumber.contains('A') ||
-        seatNumber.contains('F'); // Mock occupied seats
+    final isOccupied = reservedSeats.contains(seatNumber);
 
     return GestureDetector(
-      onTap:
-          isOccupied
-              ? null
-              : () {
-                setState(() {
-                  if (isSelected) {
-                    _selectedSeats.remove(seatNumber);
-                  } else if (_selectedSeats.length < widget.passengers) {
-                    _selectedSeats.add(seatNumber);
-                  }
-                });
-              },
+      onTap: isOccupied
+          ? null
+          : () {
+              setState(() {
+                if (isSelected) {
+                  _selectedSeats.remove(seatNumber);
+                } else if (_selectedSeats.length < widget.passengers) {
+                  _selectedSeats.add(seatNumber);
+                }
+              });
+            },
       child: Container(
         width: 24,
         height: 24,
         margin: const EdgeInsets.symmetric(horizontal: 2),
         decoration: BoxDecoration(
-          color:
-              isOccupied
-                  ? Colors.red[300]
-                  : isSelected
+          color: isOccupied
+              ? Colors.red[300]
+              : isSelected
                   ? Colors.teal
                   : Colors.grey[300],
           borderRadius: BorderRadius.circular(4),
@@ -494,21 +504,39 @@ class _FlightBookingPageState extends State<FlightBookingPage> {
       height: 56,
       child: ElevatedButton(
         onPressed: () async {
-          saveBooking(
+          // compute total price same as _buildPriceBreakdown
+          double basePrice = widget.flight.price * widget.passengers;
+          double mealPrice =
+              _selectedMeal != 'Standard' ? 15 * widget.passengers : 0;
+          double insurancePrice = _hasInsurance ? 25 * widget.passengers : 0;
+          double baggagePrice = _hasExtraBaggage ? 50 * widget.passengers : 0;
+          double total = basePrice + mealPrice + insurancePrice + baggagePrice;
+
+          final success = await saveBooking(
             flightNumber: widget.flight.flightNumber,
+            flightId: widget.flight.id,
             location: widget.flight.departureCity,
-            date: widget.flight.departureTime.toString(),
+            date: widget.flight.departureTime.toIso8601String(),
             price: widget.flight.price,
+            totalPrice: total,
+            seatNumbers: _selectedSeats,
           );
 
-          print(widget.flight.flightNumber);
-
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Booking successful!'),
-              backgroundColor: Colors.green,
-            ),
-          );
+          if (success) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Booking successful!'),
+                backgroundColor: Colors.green,
+              ),
+            );
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Booking failed. Please try again.'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
         },
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.teal,
@@ -570,37 +598,85 @@ class _FlightBookingPageState extends State<FlightBookingPage> {
     );
   }
 
-  Future<void> saveBooking({
+  Future<bool> saveBooking({
     required String flightNumber,
+    required String flightId,
     required String location,
     required String date,
     required double price,
+    required double totalPrice,
+    required List<String> seatNumbers,
   }) async {
     try {
-      // 1️⃣ نجيب المستخدم الحالي
+      // 1. current user
       final user = FirebaseAuth.instance.currentUser;
       if (user == null) {
         throw Exception("User not logged in");
       }
 
-      // 2️⃣ نجهّز بيانات الرحلة
+      // 2. prepare booking data
       final bookingData = {
+        'flightId': flightId,
         'flightNumber': flightNumber,
         'loc': location,
         'date': date,
         'price': price,
+        'totalPrice': totalPrice,
+        'seatNumbers': seatNumbers,
+        'numberOfPassengers': widget.passengers.toInt(),
         'userId': user.uid,
-        'timestamp': FieldValue.serverTimestamp(),
+        'bookingDate': FieldValue.serverTimestamp(),
+        'status': 'confirmed',
       };
 
-      // 3️⃣ نضيفها في Firestore
-      await FirebaseFirestore.instance
-          .collection('bookings') // اسم التجميعة (collection)
+      // 3. add booking
+      final bookingRef = await FirebaseFirestore.instance
+          .collection('bookings')
           .add(bookingData);
 
-      print("✅ Booking saved successfully");
+      // 4. mark seats as reserved in flights collection (create or update)
+      final flightDoc = FirebaseFirestore.instance
+          .collection('flights')
+          .doc(flightId);
+
+      await FirebaseFirestore.instance.runTransaction((tx) async {
+        final snapshot = await tx.get(flightDoc);
+        if (snapshot.exists) {
+          final data = snapshot.data();
+          final reserved = List<String>.from(data?['reservedSeats'] ?? []);
+
+          // Check for conflicts
+          for (var s in seatNumbers) {
+            if (reserved.contains(s)) {
+              throw Exception('Seat $s is already reserved');
+            }
+          }
+
+          final currentAvailable =
+              (data?['availableSeats'] ?? widget.flight.availableSeats) as int;
+          tx.update(flightDoc, {
+            'reservedSeats': FieldValue.arrayUnion(seatNumbers),
+            'availableSeats': (currentAvailable - seatNumbers.length).clamp(
+              0,
+              9999,
+            ),
+          });
+        } else {
+          tx.set(flightDoc, {
+            'flightNumber': flightNumber,
+            'reservedSeats': seatNumbers,
+            'availableSeats': (widget.flight.availableSeats -
+                    seatNumbers.length)
+                .clamp(0, 9999),
+          });
+        }
+      });
+
+      print("✅ Booking saved and seats reserved: ${bookingRef.id}");
+      return true;
     } catch (e) {
       print("❌ Error saving booking: $e");
+      return false;
     }
   }
 }

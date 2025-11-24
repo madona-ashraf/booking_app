@@ -9,8 +9,8 @@ class AmadeusService {
   static const String _tokenUrl = '$_baseUrl/v1/security/oauth2/token';
   static const String _flightOffersUrl = '$_baseUrl/v2/shopping/flight-offers';
 
-  static const String _clientId = '';
-  static const String _clientSecret = '';
+  static const String _clientId = 'z8DOvWDB3TRDi0LuhfAzDdLYG8yvIjIR';
+  static const String _clientSecret = '656fjObYFCKsQvo3';
 
   String? _accessToken;
   DateTime? _tokenExpiry;
