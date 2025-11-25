@@ -3,16 +3,19 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/models/tourist_attraction.dart';
 import '../../bookingengine/fligthrepo/amadeus_poi_service.dart';
+import '../../bookingengine/fligthrepo/amadeus_service.dart';
 import 'flight_detail_page.dart';
 import 'flight_search_page.dart';
 
 class TravelHomePage extends StatefulWidget {
-  const TravelHomePage({super.key});
+  TravelHomePage({super.key});
 
   @override
   State<TravelHomePage> createState() => _TravelHomePageState();
-
+  TextEditingController searchController = TextEditingController();
   static Widget _iconCircle(IconData icon) {
+    final amadeusService = AmadeusService();
+
     return Container(
       padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
@@ -27,7 +30,17 @@ class TravelHomePage extends StatefulWidget {
         ],
       ),
       child: IconButton(
-        onPressed: () {},
+        onPressed: () async {
+          // Implement search functionality
+          // For now, just print to console
+          final places = await amadeusService.searchPlace("New York");
+          for (var place in places) {
+            print(place["name"]); // PARIS
+            print(place["iataCode"]); // PAR
+            print(place["geoCode"]); // {latitude: 48.85, longitude: 2.34}
+          }
+          print("Search icon pressed");
+        },
         icon: Icon(icon, color: Colors.black87, size: 20),
       ),
     );
@@ -236,11 +249,13 @@ class _TravelHomePageState extends State<TravelHomePage> {
                 child: Row(
                   children: [
                     Expanded(
-                      child: TextField(
-                        decoration: InputDecoration(
-                          hintText: "Search",
-                          hintStyle: TextStyle(color: Colors.grey.shade500),
-                          border: InputBorder.none,
+                      child: Form(
+                        child: TextFormField(
+                          decoration: InputDecoration(
+                            hintText: "Search",
+                            hintStyle: TextStyle(color: Colors.grey.shade500),
+                            border: InputBorder.none,
+                          ),
                         ),
                       ),
                     ),

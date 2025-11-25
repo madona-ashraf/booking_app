@@ -121,4 +121,23 @@ class AmadeusPoiService {
     }
     return attractions;
   }
+
+  Future<void> searchPlace(String keyword) async {
+    final token = getAccessToken();
+    final url = Uri.parse(
+      'https://test.api.amadeus.com/v1/reference-data/locations?keyword=$keyword&subType=CITY',
+    );
+
+    final response = await http.get(
+      url,
+      headers: {'Authorization': 'Bearer $token'},
+    );
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      print(data);
+    } else {
+      print('Error: ${response.statusCode}');
+    }
+  }
 }

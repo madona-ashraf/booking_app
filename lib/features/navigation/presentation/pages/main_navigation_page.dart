@@ -22,7 +22,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
   void initState() {
     super.initState();
     _pages = [
-      const TravelHomePage(),
+      TravelHomePage(),
       const FlightSearchPage(),
       ProfilePage(onBookFlight: () => navigateToTab(1)),
     ];

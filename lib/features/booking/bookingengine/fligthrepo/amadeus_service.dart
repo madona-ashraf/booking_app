@@ -274,4 +274,35 @@ class AmadeusService {
   String _formatDate(DateTime date) {
     return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
   }
+
+  Future<List<Map<String, dynamic>>> searchPlace(String keyword) async {
+    try {
+      final token = await getAccessToken();
+
+      final url = Uri.parse(
+        'https://test.api.amadeus.com/v1/reference-data/locations',
+      ).replace(queryParameters: {'keyword': keyword, 'subType': 'CITY'});
+
+      final response = await http.get(
+        url,
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+
+        if (data['data'] == null) return [];
+
+        // Convert List<dynamic> to List<Map<String, dynamic>>
+        return List<Map<String, dynamic>>.from(data['data']);
+      } else {
+        throw Exception('Failed: ${response.body}');
+      }
+    } catch (e) {
+      throw Exception('Error searching place: $e');
+    }
+  }
 }
