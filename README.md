@@ -93,7 +93,7 @@ A modern and feature-rich flight booking application built with Flutter. This ap
 
 1. **Clone the repository:**
 ```bash
-git clone https://github.com/yourusername/booking_app.git
+git clone https://github.com/madona-ashraf/booking_app.git
 cd booking_app
 ```
 
