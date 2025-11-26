@@ -79,37 +79,40 @@ class TouristAttraction {
     return null;
   }
 
-  // Get Unsplash image URL based on category
+  // Get image URL based on category using reliable image services
   static String getImageUrlForCategory(String category) {
+    // Use Pixabay API or placeholder images
+    // For now, using placeholder.com which is very reliable
     final categoryMap = {
-      'MUSEUM': 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=800',
-      'HISTORICAL': 'https://images.unsplash.com/photo-1524230507669-5fff97907b41?w=800',
-      'MONUMENT': 'https://images.unsplash.com/photo-1539650116574-75c0c6d73a56?w=800',
-      'PARK': 'https://images.unsplash.com/photo-1473773508845-188df298d2d1?w=800',
-      'GARDEN': 'https://images.unsplash.com/photo-1464822759844-d150ad6bf09c?w=800',
-      'CATHEDRAL': 'https://images.unsplash.com/photo-1519491050284-3c4125d0a0a6?w=800',
-      'CHURCH': 'https://images.unsplash.com/photo-1519491050284-3c4125d0a0a6?w=800',
-      'TEMPLE': 'https://images.unsplash.com/photo-1564501049412-61c2a3083791?w=800',
-      'BRIDGE': 'https://images.unsplash.com/photo-1519802772250-a52a9af0eacb?w=800',
-      'TOWER': 'https://images.unsplash.com/photo-1493612276216-ee3925520721?w=800',
-      'PALACE': 'https://images.unsplash.com/photo-1514565131-fce0801e5785?w=800',
-      'CASTLE': 'https://images.unsplash.com/photo-1544966503-7cc5ac882d5e?w=800',
-      'SQUARE': 'https://images.unsplash.com/photo-1514565131-fce0801e5785?w=800',
-      'BEACH': 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800',
-      'RESTAURANT': 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800',
-      'SHOPPING': 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800',
+      'MUSEUM': 'https://picsum.photos/800/600?random=1',
+      'HISTORICAL': 'https://picsum.photos/800/600?random=2',
+      'MONUMENT': 'https://picsum.photos/800/600?random=3',
+      'PARK': 'https://picsum.photos/800/600?random=4',
+      'GARDEN': 'https://picsum.photos/800/600?random=5',
+      'CATHEDRAL': 'https://picsum.photos/800/600?random=6',
+      'CHURCH': 'https://picsum.photos/800/600?random=7',
+      'TEMPLE': 'https://picsum.photos/800/600?random=8',
+      'BRIDGE': 'https://picsum.photos/800/600?random=9',
+      'TOWER': 'https://picsum.photos/800/600?random=10',
+      'PALACE': 'https://picsum.photos/800/600?random=11',
+      'CASTLE': 'https://picsum.photos/800/600?random=12',
+      'SQUARE': 'https://picsum.photos/800/600?random=13',
+      'BEACH': 'https://picsum.photos/800/600?random=14',
+      'RESTAURANT': 'https://picsum.photos/800/600?random=15',
+      'SHOPPING': 'https://picsum.photos/800/600?random=16',
+      'GENERAL': 'https://picsum.photos/800/600?random=17',
     };
 
     // Try to find matching category (case insensitive)
-    final categoryLower = category.toUpperCase();
+    final categoryUpper = category.toUpperCase();
     for (var key in categoryMap.keys) {
-      if (categoryLower.contains(key)) {
+      if (categoryUpper.contains(key)) {
         return categoryMap[key]!;
       }
     }
 
-    // Default image
-    return 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800';
+    // Default image - use Lorem Picsum (very reliable)
+    return 'https://picsum.photos/800/600?random=${DateTime.now().millisecondsSinceEpoch}';
   }
 
   Map<String, dynamic> toJson() {
