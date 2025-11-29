@@ -62,7 +62,7 @@ class _LoginPageState extends State<LoginPage> {
                 key: _formKey,
                 child: Column(
                   children: [
-                    Container(child: Image.asset('assets/images/logo.jpeg')),
+                    Container(child: Image.asset('assets/images/logo.png')),
                     TextFormField(
                       controller: _emailController,
                       decoration: const InputDecoration(

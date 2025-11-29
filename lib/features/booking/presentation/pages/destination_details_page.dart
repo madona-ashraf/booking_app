@@ -14,6 +14,170 @@ class TravelHomePage extends StatefulWidget {
   @override
   State<TravelHomePage> createState() => _TravelHomePageState();
   TextEditingController searchController = TextEditingController();
+  
+  static const List<Map<String, dynamic>> popularDestinations = [
+    {
+      'image': "assets/images/bali.jpg",
+      'title': "Bali Beach Resort",
+      'location': "Bali, Indonesia",
+      'rating': 4.6,
+      'price': 1200,
+      'description': "Experience the tropical paradise of Bali with pristine beaches, ancient temples, and lush rice terraces. Discover the perfect blend of relaxation and adventure in Indonesia's most famous island destination.",
+      'attractions': ["Tanah Lot Temple", "Ubud Monkey Forest", "Tegallalang Rice Terraces", "Seminyak Beach", "Mount Batur"],
+      'images': [
+        "https://images.unsplash.com/photo-1577717903315-1691ae25ab3f?w=800",
+        "https://images.unsplash.com/photo-1539367628448-4bc5c9d171c8?w=800",
+        "https://images.unsplash.com/photo-1532186651327-6ac23687d189?w=800",
+        "https://images.unsplash.com/photo-1546484475-7f7bd55792da?w=800",
+        "https://images.unsplash.com/photo-1557093793-d149a38a1be8?w=800",
+      ],
+    },
+    {
+      'image': "assets/images/rome.jpg",
+      'title': "Historic Rome Escape",
+      'location': "Rome, Italy",
+      'rating': 4.7,
+      'price': 350,
+      'description': "Step back in time and explore the Eternal City. From the Colosseum to the Vatican, Rome offers an unparalleled journey through history, art, and culture.",
+      'attractions': ["Colosseum", "Vatican City", "Trevi Fountain", "Pantheon", "Roman Forum"],
+      'images': [
+        "https://images.unsplash.com/photo-1520175480921-4edfa2983e0f?w=800",
+        "https://images.unsplash.com/photo-1534445867742-43195f401b6c?w=800",
+        "https://plus.unsplash.com/premium_photo-1661963952208-2db3512ef3de?w=800",
+        "https://images.unsplash.com/photo-1583855282680-6dbdc69b0932?w=800",
+        "https://images.unsplash.com/photo-1535063406830-27dfae54262a?w=800",
+      ],
+    },
+    {
+      'image': "assets/images/paris.jpg",
+      'title': "Parisian Getaway",
+      'location': "Paris, France",
+      'rating': 4.8,
+      'price': 920,
+      'description': "The City of Light awaits you with its iconic landmarks, world-class museums, and romantic atmosphere. Experience the charm of French culture and cuisine.",
+      'attractions': ["Eiffel Tower", "Louvre Museum", "Notre-Dame Cathedral", "Champs-Élysées", "Montmartre"],
+      'images': [
+       "https://plus.unsplash.com/premium_photo-1694475374910-bc597c74b738?w=800",
+       "https://images.unsplash.com/photo-1585944285854-d06c019aaca3?w=800",
+       "https://plus.unsplash.com/premium_photo-1717351887353-befc71e582bb?w=800",
+       "https://images.unsplash.com/photo-1551634979-2b11f8c946fe?w=800",
+       "https://plus.unsplash.com/premium_photo-1661956135713-f93a5a95904d?w=800",
+      ],
+    },
+    {
+      'image': "assets/images/dubai.jpg",
+      'title': "Dubai Luxury Retreat",
+      'location': "Dubai, UAE",
+      'rating': 4.5,
+      'price': 1050,
+      'description': "Indulge in luxury and modern architecture in Dubai. From the world's tallest building to pristine beaches and desert adventures, Dubai offers an unforgettable experience.",
+      'attractions': ["Burj Khalifa", "Burj Al Arab", "Palm Jumeirah", "Dubai Mall", "Desert Safari"],
+      'images': [
+        "https://images.unsplash.com/photo-1459787915554-b34915863013?w=800",
+        "https://images.unsplash.com/photo-1546412414-8035e1776c9a?w=800",
+        "https://plus.unsplash.com/premium_photo-1697729914552-368899dc4757?w=800",
+        "https://images.unsplash.com/photo-1518684079-3c830dcef090?w=800",
+        "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=800",
+      ],
+    },
+    {
+      'image': "assets/images/cairo.jpg",
+      'title': "Cairo Cultural Tour",
+      'location': "Cairo, Egypt",
+      'rating': 4.4,
+      'price': 640,
+      'description': "Discover the ancient wonders of Egypt in Cairo. Explore the Pyramids of Giza, the Sphinx, and immerse yourself in thousands of years of history and culture.",
+      'attractions': ["Pyramids of Giza", "Great Sphinx", "Egyptian Museum", "Khan el-Khalili", "Nile River"],
+      'images': [
+        "https://images.unsplash.com/photo-1695159151179-23b79aeba7d8?w=800",
+        "https://images.unsplash.com/photo-1719659018185-8a239c35fb4a?w=800",
+        "https://images.unsplash.com/photo-1697582718102-bd0e67cdf7ad?w=800",
+        "https://images.unsplash.com/photo-1559738933-d69ac3ff674b?w=800",
+        "https://images.unsplash.com/photo-1630201187972-dc4136076c6c?w=800",
+      ],
+    },
+    {
+      'image': "assets/images/istanbul.jpg",
+      'title': "Istanbul Bazaar Trail",
+      'location': "Istanbul, Turkey",
+      'rating': 4.3,
+      'price': 580,
+      'description': "Where East meets West. Istanbul offers a unique blend of cultures, stunning architecture, and vibrant bazaars. Experience the magic of this transcontinental city.",
+      'attractions': ["Hagia Sophia", "Blue Mosque", "Grand Bazaar", "Topkapi Palace", "Bosphorus Strait"],
+      'images': [
+        "https://images.unsplash.com/photo-1527838832700-5059252407fa?w=800",
+        "https://plus.unsplash.com/premium_photo-1691338312403-e9f7f7984eeb?w=800",
+        "https://images.unsplash.com/photo-1526048598645-62b31f82b8f5?w=800",
+        "https://images.unsplash.com/photo-1531257240678-d5b1922e672d?w=800",
+        "https://images.unsplash.com/photo-1567527259232-3a7fcd490c55?w=800",
+        ],
+    },
+    {
+      'image': "assets/images/bangkok.jpg",
+      'title': "Bangkok City Adventure",
+      'location': "Bangkok, Thailand",
+      'rating': 4.6,
+      'price': 720,
+      'description': "Experience the vibrant energy of Bangkok with its bustling markets, ornate temples, and delicious street food. A city that never sleeps, offering endless adventures.",
+      'attractions': ["Wat Pho", "Grand Palace", "Chatuchak Market", "Wat Arun", "Floating Markets"],
+      'images': [
+        "https://plus.unsplash.com/premium_photo-1661962432490-6188a6420a81?w=800",
+        "https://plus.unsplash.com/premium_photo-1693149386423-2e4e264712e5?w=800",
+        "https://plus.unsplash.com/premium_photo-1661962958462-9e52fda9954d?w=800",
+        "https://images.unsplash.com/photo-1483683804023-6ccdb62f86ef?w=800",
+        "https://images.unsplash.com/photo-1521109464564-2fa2faa95858?w=800",
+      ],
+    },
+    {
+      'image': "assets/images/london.jpg",
+      'title': "London Royal Experience",
+      'location': "London, UK",
+      'rating': 4.9,
+      'price': 980,
+      'description': "Explore the royal capital of England with its rich history, iconic landmarks, and world-class museums. From Buckingham Palace to the Tower of London, experience British heritage.",
+      'attractions': ["Big Ben", "Tower Bridge", "Buckingham Palace", "British Museum", "London Eye"],
+      'images': [
+        "https://images.unsplash.com/photo-1547254002-e65e0179fe9f?w=800",
+        "https://images.unsplash.com/photo-1546885692-8e7c1b59da2c?w=800",
+        "https://images.unsplash.com/photo-1575227092814-b3087ab73fc8?w=800",
+        "https://images.unsplash.com/photo-1500380804539-4e1e8c1e7118?w=800",
+        "https://images.unsplash.com/photo-1534359265607-b9cdb5e0a81e?w=800",
+      ],
+    },
+    {
+      'image': "assets/images/newyork.jpg",
+      'title': "New York City Lights",
+      'location': "New York, USA",
+      'rating': 4.7,
+      'price': 1100,
+      'description': "The city that never sleeps! Experience the energy of New York with its iconic skyline, Broadway shows, world-class dining, and endless entertainment options.",
+      'attractions': ["Statue of Liberty", "Central Park", "Times Square", "Empire State Building", "Brooklyn Bridge"],
+      'images': [
+        "https://plus.unsplash.com/premium_photo-1670176447606-b186805a6ac1?w=800",
+        "https://plus.unsplash.com/premium_photo-1673266630624-4cbef6d25ff4?w=800",
+        "https://images.unsplash.com/photo-1576723658639-513237fdd520?w=800",
+        "https://images.unsplash.com/photo-1515081774057-84dcf72d0cf1?w=800",
+        "https://images.unsplash.com/photo-1529619768328-e37af76c6fe5?w=800",
+      ],
+    },
+    {
+      'image': "assets/images/abuja.jpg",
+      'title': "Abuja Capital Discovery",
+      'location': "Abuja, Nigeria",
+      'rating': 4.5,
+      'price': 450,
+      'description': "Discover Nigeria's modern capital city with its impressive architecture, beautiful parks, and rich cultural heritage. Experience the vibrant African culture and warm hospitality.",
+      'attractions': ["Aso Rock", "National Mosque", "Millennium Park", "Nigerian National Museum", "Zuma Rock"],
+      'images': [
+        "https://images.unsplash.com/photo-1618828665347-d870c38c95c7?w=800",
+        "https://images.unsplash.com/photo-1587858090544-ed2017db3f12?w=800",
+        "https://images.unsplash.com/photo-1734257855024-d41a1e1d9a0c?w=800",
+        "https://images.unsplash.com/photo-1648023200358-9dc050df521d?w=800",
+        "https://images.unsplash.com/photo-1719314073622-9399d167725b?w=800",
+
+      ],
+    },
+  ];
 }
 
 class _TravelHomePageState extends State<TravelHomePage> {
@@ -32,21 +196,6 @@ class _TravelHomePageState extends State<TravelHomePage> {
     {'name': 'London','image': 'assets/images/london.jpg','location': 'United Kingdom','price': 650,'rating': 4.9},
     {'name': 'Paris','image': 'assets/images/paris.jpg','location': 'France','price': 780,'rating': 4.7},
     {'name': 'Dubai','image': 'assets/images/dubai.jpg','location': 'United Arab Emirates','price': 980,'rating': 4.6},
-  ];
-
-  static const List<Map<String, dynamic>> popularDestinations = [
-    {'image': "assets/images/bali.jpg",'title': "Bali Beach Resort",'location': "Bali, Indonesia",'rating': 4.6,'price': 1200},
-    {'image': "assets/images/rome.jpg",'title': "Historic Rome Escape",'location': "Rome, Italy",'rating': 4.7,'price': 350},
-    {'image': "assets/images/paris.jpg",'title': "Parisian Getaway",'location': "Paris, France",'rating': 4.8,'price': 920},
-    {'image': "assets/images/dubai.jpg",'title': "Dubai Luxury Retreat",'location': "Dubai, UAE",'rating': 4.5,'price': 1050},
-    {'image': "assets/images/cairo.jpg",'title': "Cairo Cultural Tour",'location': "Cairo, Egypt",'rating': 4.4,'price': 640},
-    {'image': "assets/images/istanbul.jpg",'title': "Istanbul Bazaar Trail",'location': "Istanbul, Turkey",'rating': 4.3,'price': 580},
-    {'image': "assets/images/bangkok.jpg",'title': "Bangkok City Adventure",'location': "Bangkok, Thailand",'rating': 4.6,'price': 720},
-    {'image': "assets/images/london.jpg",'title': "London Royal Experience",'location': "London, UK",'rating': 4.9,'price': 980},
-    {'image': "assets/images/newyork.jpg",'title': "New York City Lights",'location': "New York, USA",'rating': 4.7,'price': 1100},
-    {'image': "assets/images/abuja.jpg",'title': "Abuja Capital Discovery",'location': "Abuja, Nigeria",'rating': 4.5,'price': 450},
-    {'image': "assets/images/bali.jpg",'title': "Bali Tropical Paradise",'location': "Bali, Indonesia",'rating': 4.8,'price': 1350},
-    {'image': "assets/images/paris.jpg",'title': "Paris Romance Package",'location': "Paris, France",'rating': 4.9,'price': 1250},
   ];
 
   @override
@@ -166,17 +315,17 @@ class _TravelHomePageState extends State<TravelHomePage> {
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Row(
-                  children: [
-                    const CircleAvatar(
-                      radius: 27,
-                      backgroundColor: Colors.teal,
+                      children: [
+                        const CircleAvatar(
+                          radius: 27,
+                          backgroundColor: Colors.teal,
                       backgroundImage: AssetImage('assets/images/home_bg.jpg'),
                       child: Icon(Icons.person, size: 35, color: Colors.white),
-                    ),
-                    const SizedBox(width: 10),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
+                        ),
+                        const SizedBox(width: 10),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
                         Text('Hi, ${name ?? 'there'}',
                             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                       ],
@@ -191,22 +340,22 @@ class _TravelHomePageState extends State<TravelHomePage> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.teal.withOpacity(0.5)),
-                      borderRadius: BorderRadius.circular(25),
-                    ),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: TextFormField(
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.teal.withOpacity(0.5)),
+                  borderRadius: BorderRadius.circular(25),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                        child: TextFormField(
                             controller: widget.searchController,
-                            decoration: InputDecoration(
-                              hintText: "ابحث عن مكان...",
-                              hintStyle: TextStyle(color: Colors.grey.shade500),
-                              border: InputBorder.none,
-                            ),
+                          decoration: InputDecoration(
+                              hintText: "Where do you want to go?",
+                            hintStyle: TextStyle(color: Colors.grey.shade500),
+                            border: InputBorder.none,
+                          ),
                             onFieldSubmitted: _performSearch,
                           ),
                         ),
@@ -281,10 +430,10 @@ class _TravelHomePageState extends State<TravelHomePage> {
                                 child: isSearching
                                     ? const CircularProgressIndicator()
                                     : const Text('لا توجد نتائج', style: TextStyle(color: Colors.grey)),
-                              ),
-                            ),
+                        ),
+                      ),
                     ),
-                ],
+                  ],
               ),
 
               const SizedBox(height: 30),
@@ -297,14 +446,14 @@ class _TravelHomePageState extends State<TravelHomePage> {
                 child: ListView(
                   scrollDirection: Axis.horizontal,
                   children: cities.map((city) {
-                    return _CityCircle(
-                      name: city['name'] as String,
-                      image: city['image'] as String,
-                      location: city['location'] as String,
-                      price: city['price'] as int,
-                      rating: city['rating'] as double,
-                    );
-                  }).toList(),
+                        return _CityCircle(
+                          name: city['name'] as String,
+                          image: city['image'] as String,
+                          location: city['location'] as String,
+                          price: city['price'] as int,
+                          rating: city['rating'] as double,
+                        );
+                      }).toList(),
                 ),
               ),
 
@@ -322,9 +471,9 @@ class _TravelHomePageState extends State<TravelHomePage> {
                   crossAxisSpacing: 15,
                   childAspectRatio: 0.75,
                 ),
-                itemCount: popularDestinations.length,
+                itemCount: TravelHomePage.popularDestinations.length,
                 itemBuilder: (context, index) {
-                  final destination = popularDestinations[index];
+                  final destination = TravelHomePage.popularDestinations[index];
                   return _DestinationCard(
                     image: destination['image'] as String,
                     title: destination['title'] as String,
@@ -387,16 +536,23 @@ class _DestinationCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
+        final destination = TravelHomePage.popularDestinations.firstWhere(
+          (dest) => dest['title'] == title,
+          orElse: () => <String, dynamic>{},
+        );
         Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) => FlightDetailPage(
-              flightName: title,
-              location: location,
-              price: price,
-              rating: rating,
+                  flightName: title,
+                  location: location,
+                  price: price,
+                  rating: rating,
               imagePath: image,
-            ),
+              description: destination['description'] as String?,
+              attractions: destination['attractions'] as List<String>?,
+              images: destination['images'] as List<String>?,
+                ),
           ),
         );
       },
