@@ -211,13 +211,80 @@ class _TravelHomePageState extends State<TravelHomePage> {
   }
 
   void _onSearchChanged() {
-    final query = widget.searchController.text.trim();
+    final query = widget.searchController.text.trim().toLowerCase();
     if (query.isEmpty) {
       setState(() {
         showSearchResults = false;
         searchResults = [];
       });
+      return;
     }
+
+    // Search in available destinations and cities for auto-complete
+    final localResults = _searchLocalDestinations(query);
+    
+    if (localResults.isNotEmpty) {
+      setState(() {
+        searchResults = localResults;
+        showSearchResults = true;
+        isSearching = false;
+      });
+    } else {
+      // If no local results, perform API search
+      _performSearch(widget.searchController.text);
+    }
+  }
+
+  List<Map<String, dynamic>> _searchLocalDestinations(String query) {
+    final results = <Map<String, dynamic>>[];
+    
+    // Search in popular destinations
+    for (var dest in TravelHomePage.popularDestinations) {
+      final title = (dest['title'] as String).toLowerCase();
+      final location = (dest['location'] as String).toLowerCase();
+      
+      if (title.contains(query) || location.contains(query)) {
+        results.add({
+          'name': dest['title'],
+          'location': dest['location'],
+          'type': 'destination',
+          'data': dest,
+        });
+      }
+    }
+    
+    // Search in cities
+    for (var city in cities) {
+      final name = (city['name'] as String).toLowerCase();
+      final location = (city['location'] as String).toLowerCase();
+      
+      if (name.contains(query) || location.contains(query)) {
+        // Try to find matching destination from popularDestinations
+        final matchingDest = TravelHomePage.popularDestinations.firstWhere(
+          (dest) => (dest['location'] as String).contains(city['name'] as String) ||
+                     (dest['title'] as String).contains(city['name'] as String),
+          orElse: () => <String, dynamic>{},
+        );
+        
+        if (matchingDest.isNotEmpty) {
+          results.add({
+            'name': matchingDest['title'],
+            'location': matchingDest['location'],
+            'type': 'destination',
+            'data': matchingDest,
+          });
+        } else {
+          results.add({
+            'name': city['name'],
+            'location': city['location'],
+            'type': 'city',
+            'data': city,
+          });
+        }
+      }
+    }
+    
+    return results;
   }
 
   Future<void> _performSearch(String query) async {
@@ -230,6 +297,9 @@ class _TravelHomePageState extends State<TravelHomePage> {
       return;
     }
 
+    // First check local destinations
+    final localResults = _searchLocalDestinations(query.toLowerCase());
+    
     setState(() {
       isSearching = true;
       showSearchResults = true;
@@ -237,16 +307,37 @@ class _TravelHomePageState extends State<TravelHomePage> {
 
     try {
       final places = await amadeusService.searchPlace(query);
+      
+      // Combine local results with API results
+      final combinedResults = <Map<String, dynamic>>[];
+      
+      // Add local results first (they have priority)
+      combinedResults.addAll(localResults);
+      
+      // Add API results, avoiding duplicates
+      for (var place in places) {
+        final placeName = (place['name'] ?? place['detailedName'] ?? '').toString().toLowerCase();
+        final isDuplicate = localResults.any((local) => 
+          (local['name'] as String).toLowerCase() == placeName
+        );
+        
+        if (!isDuplicate) {
+          combinedResults.add(place);
+        }
+      }
+      
       setState(() {
-        searchResults = places;
+        searchResults = combinedResults;
         isSearching = false;
       });
     } catch (e) {
+      // If API fails, still show local results
       setState(() {
+        searchResults = localResults;
         isSearching = false;
-        searchResults = [];
       });
-      if (mounted) {
+      
+      if (mounted && localResults.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error searching for places: $e'),
@@ -259,6 +350,71 @@ class _TravelHomePageState extends State<TravelHomePage> {
   }
 
   void _onPlaceSelected(Map<String, dynamic> place) {
+    // Check if it's a local destination or city
+    if (place['type'] == 'destination' || place['type'] == 'city') {
+      final data = place['data'] as Map<String, dynamic>;
+      
+      if (place['type'] == 'destination') {
+        // Open destination detail page
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => FlightDetailPage(
+              flightName: data['title'] as String,
+              location: data['location'] as String,
+              price: data['price'] as int,
+              rating: data['rating'] as double,
+              imagePath: data['image'] as String,
+              description: data['description'] as String?,
+              attractions: data['attractions'] as List<String>?,
+              images: data['images'] as List<String>?,
+            ),
+          ),
+        );
+      } else {
+        // It's a city, try to find matching destination or go to flight search
+        final cityName = data['name'] as String;
+        final matchingDest = TravelHomePage.popularDestinations.firstWhere(
+          (dest) => (dest['location'] as String).contains(cityName) ||
+                     (dest['title'] as String).contains(cityName),
+          orElse: () => <String, dynamic>{},
+        );
+        
+        if (matchingDest.isNotEmpty) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => FlightDetailPage(
+                flightName: matchingDest['title'] as String,
+                location: matchingDest['location'] as String,
+                price: matchingDest['price'] as int,
+                rating: matchingDest['rating'] as double,
+                imagePath: matchingDest['image'] as String,
+                description: matchingDest['description'] as String?,
+                attractions: matchingDest['attractions'] as List<String>?,
+                images: matchingDest['images'] as List<String>?,
+              ),
+            ),
+          );
+        } else {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => FlightSearchPage(initialDestination: cityName),
+            ),
+          );
+        }
+      }
+      
+      widget.searchController.clear();
+      setState(() {
+        showSearchResults = false;
+        searchResults = [];
+      });
+      return;
+    }
+    
+    // Handle API results (original logic)
     final placeName = place['name'] ?? place['detailedName'] ?? place['subType'] ?? 'Unknown';
     final geoCode = place['geoCode'] as Map<String, dynamic>?;
 
@@ -390,6 +546,44 @@ class _TravelHomePageState extends State<TravelHomePage> {
                               itemCount: searchResults.length,
                               itemBuilder: (context, index) {
                                 final place = searchResults[index];
+                                
+                                // Check if it's a local destination/city
+                                if (place['type'] == 'destination' || place['type'] == 'city') {
+                                  final data = place['data'] as Map<String, dynamic>;
+                                  final placeName = place['name'] as String;
+                                  final location = place['location'] as String;
+                                  final rating = data['rating'] as double?;
+                                  
+                                  return ListTile(
+                                    leading: const Icon(Icons.place, color: Colors.orange, size: 28),
+                                    title: Text(
+                                      placeName,
+                                      style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+                                    ),
+                                    subtitle: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(location, style: const TextStyle(fontSize: 13)),
+                                        if (rating != null)
+                                          Row(
+                                            children: [
+                                              const Icon(Icons.star, size: 14, color: Colors.amber),
+                                              const SizedBox(width: 4),
+                                              Text(
+                                                rating.toString(),
+                                                style: const TextStyle(fontSize: 12),
+                                              ),
+                                            ],
+                                          ),
+                                      ],
+                                    ),
+                                    onTap: () => _onPlaceSelected(place),
+                                    trailing: const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.teal),
+                                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                  );
+                                }
+                                
+                                // Handle API results (original logic)
                                 final placeName = place['name'] ?? place['detailedName'] ?? place['subType'] ?? 'Unknown Place';
                                 final iataCode = place['iataCode'] ?? place['iata'] ?? '';
                                 final geoCode = place['geoCode'] as Map<String, dynamic>?;

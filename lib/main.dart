@@ -15,6 +15,7 @@ Future<void> main() async {
   runApp(const FlightApp());
 }
 
+
 class FlightApp extends StatelessWidget {
   const FlightApp({super.key});
 

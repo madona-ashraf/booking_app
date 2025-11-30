@@ -225,10 +225,18 @@ class FlightDetailPage extends StatelessWidget {
             Center(
               child: ElevatedButton.icon(
                 onPressed: () {
+                  // Extract city name from location (e.g., "Bali, Indonesia" -> "Bali")
+                  String destination = location;
+                  if (location.contains(',')) {
+                    destination = location.split(',').first.trim();
+                  }
+                  
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const FlightSearchPage(),
+                      builder: (context) => FlightSearchPage(
+                        initialDestination: destination,
+                      ),
                     ),
                   );
                 },
