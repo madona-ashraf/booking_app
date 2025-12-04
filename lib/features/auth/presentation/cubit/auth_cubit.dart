@@ -4,13 +4,12 @@ import 'dart:async';
 import 'package:equatable/equatable.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:hydrated_bloc/hydrated_bloc.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 part 'auth_state.dart';
 
-class AuthCubit extends HydratedCubit<AuthState> {
+class AuthCubit extends Cubit<AuthState> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   StreamSubscription<User?>? _authStateSubscription;
 
@@ -46,35 +45,6 @@ class AuthCubit extends HydratedCubit<AuthState> {
     }
   }
 
-  @override
-  AuthState? fromJson(Map<String, dynamic> json) {
-    try {
-      if (json['isAuthenticated'] == true && json['email'] != null) {
-        // Verify with Firebase that user is still authenticated
-        final user = _auth.currentUser;
-        if (user != null && user.email == json['email']) {
-          return Authenticated(email: json['email'] as String);
-        }
-      }
-      return Unauthenticated();
-    } catch (e) {
-      return Unauthenticated();
-    }
-  }
-
-  @override
-  Map<String, dynamic>? toJson(AuthState state) {
-    if (state is Authenticated) {
-      return {
-        'isAuthenticated': true,
-        'email': state.email,
-      };
-    }
-    return {
-      'isAuthenticated': false,
-    };
-  }
-
   Future<void> register(String email, String password) async {
     try {
       await _auth.createUserWithEmailAndPassword(
@@ -105,15 +75,11 @@ class AuthCubit extends HydratedCubit<AuthState> {
       // Sign out from Firebase
       await _auth.signOut();
       
-      // Clear hydrated state
-      clear();
-      
       emit(Unauthenticated());
     } catch (e) {
       // Even if Google sign out fails, sign out from Firebase
-    await _auth.signOut();
-      clear();
-    emit(Unauthenticated());
+      await _auth.signOut();
+      emit(Unauthenticated());
     }
   }
 
