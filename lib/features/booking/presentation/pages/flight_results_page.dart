@@ -11,7 +11,7 @@ class FlightResultsPage extends StatefulWidget {
   final String arrivalCity;
   final DateTime departureDate;
   final DateTime returnDate;
-  final double passengers;
+  final int passengers;
   final String classType;
 
   const FlightResultsPage({
@@ -74,7 +74,7 @@ class _FlightResultsPageState extends State<FlightResultsPage> {
         destinationLocationCode: destinationCode,
         departureDate: widget.departureDate,
         returnDate: widget.returnDate,
-        adults: widget.passengers.toInt(),
+        adults: widget.passengers,
         travelClass: travelClass,
         max: 25,
       );
@@ -178,7 +178,7 @@ class _FlightResultsPageState extends State<FlightResultsPage> {
                         ),
                       ),
                       Text(
-                        '${widget.passengers.toInt()} passenger${widget.passengers > 1 ? 's' : ''} • ${widget.classType}',
+                        '${widget.passengers} passenger${widget.passengers > 1 ? 's' : ''} • ${widget.classType}',
                         style: TextStyle(
                           fontFamily: 'Poppins',
                           color: Colors.grey[600],

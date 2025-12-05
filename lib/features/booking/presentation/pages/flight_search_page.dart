@@ -15,7 +15,7 @@ class FlightSearchPage extends StatefulWidget {
 class _FlightSearchPageState extends State<FlightSearchPage> {
   DateTime _departureDate = DateTime.now().add(const Duration(days: 1));
   DateTime? _returnDate;
-  double _passengers = 1;
+  int _passengers = 1;
   String _classType = 'Economy';
   bool _isRoundTrip = false;
   String? _selectedFromCity;
@@ -549,10 +549,13 @@ class _FlightSearchPageState extends State<FlightSearchPage> {
   }
 
   void _showPassengerSelector() {
+    int tempPassengers = _passengers;
+    
     showModalBottomSheet(
       context: context,
-      builder:
-          (context) => Container(
+      builder: (bottomSheetContext) => StatefulBuilder(
+        builder: (BuildContext context, StateSetter setModalState) {
+          return Container(
             padding: const EdgeInsets.all(20),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -576,14 +579,17 @@ class _FlightSearchPageState extends State<FlightSearchPage> {
                     Row(
                       children: [
                         IconButton(
-                          onPressed:
-                              _passengers > 1
-                                  ? () => setState(() => _passengers--)
+                          onPressed: tempPassengers > 1
+                              ? () {
+                                  setModalState(() {
+                                    tempPassengers--;
+                                  });
+                                }
                                   : null,
                           icon: const Icon(Icons.remove_circle_outline),
                         ),
                         Text(
-                          '$_passengers',
+                          '$tempPassengers',
                           style: const TextStyle(
                             fontFamily: 'Poppins',
                             fontSize: 18,
@@ -591,9 +597,12 @@ class _FlightSearchPageState extends State<FlightSearchPage> {
                           ),
                         ),
                         IconButton(
-                          onPressed:
-                              _passengers < 9
-                                  ? () => setState(() => _passengers++)
+                          onPressed: tempPassengers < 9
+                              ? () {
+                                  setModalState(() {
+                                    tempPassengers++;
+                                  });
+                                }
                                   : null,
                           icon: const Icon(Icons.add_circle_outline),
                         ),
@@ -603,7 +612,12 @@ class _FlightSearchPageState extends State<FlightSearchPage> {
                 ),
                 const SizedBox(height: 20),
                 ElevatedButton(
-                  onPressed: () => Navigator.pop(context),
+                  onPressed: () {
+                    setState(() {
+                      _passengers = tempPassengers;
+                    });
+                    Navigator.pop(context);
+                  },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.teal,
                     foregroundColor: Colors.white,
@@ -615,6 +629,8 @@ class _FlightSearchPageState extends State<FlightSearchPage> {
                 ),
               ],
             ),
+          );
+        },
           ),
     );
   }

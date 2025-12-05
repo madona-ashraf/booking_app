@@ -3,14 +3,29 @@ import 'package:bookingapp/features/home/presentation/pages/home_page.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:hydrated_bloc/hydrated_bloc.dart';
+import 'package:path_provider/path_provider.dart';
 
 import 'core/constants/app_colors.dart';
 import 'features/navigation/presentation/pages/main_navigation_page.dart';
 import 'firebase_options.dart';
 
+
+
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize Firebase
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
+  // Get the application documents directory
+  final directory = await getApplicationDocumentsDirectory();
+
+  // Initialize HydratedBloc storage
+  HydratedBloc.storage = await HydratedStorage.build(
+    storageDirectory: directory as HydratedStorageDirectory , // pass the Directory, NOT a function
+  );
 
   runApp(const FlightApp());
 }

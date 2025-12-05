@@ -7,7 +7,7 @@ import '../../../../core/models/flight.dart';
 
 class FlightBookingPage extends StatefulWidget {
   final Flight flight;
-  final double passengers;
+  final int passengers;
   final String classType;
 
   const FlightBookingPage({
@@ -439,9 +439,9 @@ class _FlightBookingPageState extends State<FlightBookingPage> {
 
   Widget _buildPriceBreakdown() {
     double basePrice = widget.flight.price * widget.passengers;
-    double mealPrice = _selectedMeal != 'Standard' ? 15 * widget.passengers : 0;
-    double insurancePrice = _hasInsurance ? 25 * widget.passengers : 0;
-    double baggagePrice = _hasExtraBaggage ? 50 * widget.passengers : 0;
+    double mealPrice = _selectedMeal != 'Standard' ? 15.0 * widget.passengers : 0.0;
+    double insurancePrice = _hasInsurance ? 25.0 * widget.passengers : 0.0;
+    double baggagePrice = _hasExtraBaggage ? 50.0 * widget.passengers : 0.0;
     double total = basePrice + mealPrice + insurancePrice + baggagePrice;
 
     return Container(
@@ -516,10 +516,9 @@ class _FlightBookingPageState extends State<FlightBookingPage> {
         onPressed: () async {
           // compute total price same as _buildPriceBreakdown
           double basePrice = widget.flight.price * widget.passengers;
-          double mealPrice =
-              _selectedMeal != 'Standard' ? 15 * widget.passengers : 0;
-          double insurancePrice = _hasInsurance ? 25 * widget.passengers : 0;
-          double baggagePrice = _hasExtraBaggage ? 50 * widget.passengers : 0;
+          double mealPrice = _selectedMeal != 'Standard' ? 15.0 * widget.passengers : 0.0;
+          double insurancePrice = _hasInsurance ? 25.0 * widget.passengers : 0.0;
+          double baggagePrice = _hasExtraBaggage ? 50.0 * widget.passengers : 0.0;
           double total = basePrice + mealPrice + insurancePrice + baggagePrice;
 
           final success = await saveBooking(
@@ -633,7 +632,7 @@ class _FlightBookingPageState extends State<FlightBookingPage> {
         'price': price,
         'totalPrice': totalPrice,
         'seatNumbers': seatNumbers,
-        'numberOfPassengers': widget.passengers.toInt(),
+        'numberOfPassengers': widget.passengers,
         'userId': user.uid,
         'bookingDate': FieldValue.serverTimestamp(),
         'status': 'confirmed',

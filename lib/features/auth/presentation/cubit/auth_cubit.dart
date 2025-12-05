@@ -4,18 +4,27 @@ import 'dart:async';
 import 'package:equatable/equatable.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:hydrated_bloc/hydrated_bloc.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 part 'auth_state.dart';
 
-class AuthCubit extends Cubit<AuthState> {
+class AuthCubit extends HydratedCubit<AuthState> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   StreamSubscription<User?>? _authStateSubscription;
 
   AuthCubit() : super(Unauthenticated()) {
     // Check Firebase Auth state on initialization
     // Firebase Auth persists the session automatically
+    _initializeAuth();
+  }
+
+  Future<void> _initializeAuth() async {
+    // Wait a bit for Firebase to initialize
+    await Future.delayed(const Duration(milliseconds: 100));
+    
+    // Check Firebase Auth state
     _checkAuthState();
 
     // Also listen to auth state changes
@@ -35,6 +44,35 @@ class AuthCubit extends Cubit<AuthState> {
     } else {
       emit(Unauthenticated());
     }
+  }
+
+  @override
+  AuthState? fromJson(Map<String, dynamic> json) {
+    try {
+      if (json['isAuthenticated'] == true && json['email'] != null) {
+        // Verify with Firebase that user is still authenticated
+        final user = _auth.currentUser;
+        if (user != null && user.email == json['email']) {
+          return Authenticated(email: json['email'] as String);
+        }
+      }
+      return Unauthenticated();
+    } catch (e) {
+      return Unauthenticated();
+    }
+  }
+
+  @override
+  Map<String, dynamic>? toJson(AuthState state) {
+    if (state is Authenticated) {
+      return {
+        'isAuthenticated': true,
+        'email': state.email,
+      };
+    }
+    return {
+      'isAuthenticated': false,
+    };
   }
 
   Future<void> register(String email, String password) async {
@@ -59,8 +97,24 @@ class AuthCubit extends Cubit<AuthState> {
   }
 
   Future<void> logout() async {
+    try {
+      // Sign out from Google Sign-In
+      final GoogleSignIn googleSignIn = GoogleSignIn();
+      await googleSignIn.signOut();
+      
+      // Sign out from Firebase
+      await _auth.signOut();
+      
+      // Clear hydrated state
+      clear();
+      
+      emit(Unauthenticated());
+    } catch (e) {
+      // Even if Google sign out fails, sign out from Firebase
     await _auth.signOut();
+      clear();
     emit(Unauthenticated());
+    }
   }
 
   Future<void> signInWithGoogle() async {

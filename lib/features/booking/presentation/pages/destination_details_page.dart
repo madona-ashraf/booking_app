@@ -260,13 +260,17 @@ class _TravelHomePageState extends State<TravelHomePage> {
       
       if (name.contains(query) || location.contains(query)) {
         // Try to find matching destination from popularDestinations
-        final matchingDest = TravelHomePage.popularDestinations.firstWhere(
-          (dest) => (dest['location'] as String).contains(city['name'] as String) ||
-                     (dest['title'] as String).contains(city['name'] as String),
-          orElse: () => <String, dynamic>{},
-        );
+        Map<String, dynamic>? matchingDest;
+        try {
+          matchingDest = TravelHomePage.popularDestinations.firstWhere(
+            (dest) => (dest['location'] as String).contains(city['name'] as String) ||
+                       (dest['title'] as String).contains(city['name'] as String),
+          );
+        } catch (e) {
+          matchingDest = null;
+        }
         
-        if (matchingDest.isNotEmpty) {
+        if (matchingDest != null) {
           results.add({
             'name': matchingDest['title'],
             'location': matchingDest['location'],
@@ -374,25 +378,29 @@ class _TravelHomePageState extends State<TravelHomePage> {
       } else {
         // It's a city, try to find matching destination or go to flight search
         final cityName = data['name'] as String;
-        final matchingDest = TravelHomePage.popularDestinations.firstWhere(
-          (dest) => (dest['location'] as String).contains(cityName) ||
-                     (dest['title'] as String).contains(cityName),
-          orElse: () => <String, dynamic>{},
-        );
+        Map<String, dynamic>? matchingDest;
+        try {
+          matchingDest = TravelHomePage.popularDestinations.firstWhere(
+            (dest) => (dest['location'] as String).contains(cityName) ||
+                       (dest['title'] as String).contains(cityName),
+          );
+        } catch (e) {
+          matchingDest = null;
+        }
         
-        if (matchingDest.isNotEmpty) {
+        if (matchingDest != null) {
           Navigator.push(
             context,
             MaterialPageRoute(
               builder: (context) => FlightDetailPage(
-                flightName: matchingDest['title'] as String,
-                location: matchingDest['location'] as String,
-                price: matchingDest['price'] as int,
-                rating: matchingDest['rating'] as double,
-                imagePath: matchingDest['image'] as String,
-                description: matchingDest['description'] as String?,
-                attractions: matchingDest['attractions'] as List<String>?,
-                images: matchingDest['images'] as List<String>?,
+                flightName: matchingDest!['title'] as String,
+                location: matchingDest!['location'] as String,
+                price: matchingDest!['price'] as int,
+                rating: matchingDest!['rating'] as double,
+                imagePath: matchingDest!['image'] as String,
+                description: matchingDest!['description'] as String?,
+                attractions: matchingDest!['attractions'] as List<String>?,
+                images: matchingDest!['images'] as List<String>?,
               ),
             ),
           );
@@ -508,7 +516,7 @@ class _TravelHomePageState extends State<TravelHomePage> {
                         child: TextFormField(
                             controller: widget.searchController,
                           decoration: InputDecoration(
-                              hintText: "Where do you want to go?",
+                              hintText: "Search",
                             hintStyle: TextStyle(color: Colors.grey.shade500),
                             border: InputBorder.none,
                           ),
@@ -730,10 +738,15 @@ class _DestinationCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        final destination = TravelHomePage.popularDestinations.firstWhere(
-          (dest) => dest['title'] == title,
-          orElse: () => <String, dynamic>{},
-        );
+        Map<String, dynamic>? destination;
+        try {
+          destination = TravelHomePage.popularDestinations.firstWhere(
+            (dest) => dest['title'] == title,
+          );
+        } catch (e) {
+          destination = null;
+        }
+        
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -743,9 +756,9 @@ class _DestinationCard extends StatelessWidget {
                   price: price,
                   rating: rating,
               imagePath: image,
-              description: destination['description'] as String?,
-              attractions: destination['attractions'] as List<String>?,
-              images: destination['images'] as List<String>?,
+              description: destination?['description'] as String?,
+              attractions: destination?['attractions'] as List<String>?,
+              images: destination?['images'] as List<String>?,
                 ),
           ),
         );
@@ -754,7 +767,6 @@ class _DestinationCard extends StatelessWidget {
         decoration: BoxDecoration(borderRadius: BorderRadius.circular(20), image: DecorationImage(image: AssetImage(image), fit: BoxFit.cover)),
         child: Stack(
           children: [
-            Positioned(right: 10, top: 10, child: Icon(Icons.favorite_border, color: Colors.white, size: 24)),
             Positioned(
               bottom: 15,
               left: 10,
